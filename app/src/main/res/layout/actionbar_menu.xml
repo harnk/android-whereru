@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <item android:id="@+id/compose_icon"
+        android:icon="@drawable/ic_compose"
+        android:title="Refresh"
+        app:showAsAction="withText|ifRoom"
+        />
+    <!--<item android:id="@+id/action_settings"-->
+    <!--android:title="@string/action_settings"-->
+    <!--android:orderInCategory="100"-->
+    <!--app:showAsAction="never"-->
+    <!--/>-->
+</LinearLayout>
