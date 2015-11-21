@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
@@ -32,11 +33,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private ListView messageList;
+    private DeviceUuidFactory deviceUuidFactory;
 
     //GCM stuff
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -78,6 +81,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
+        deviceUuidFactory = new DeviceUuidFactory(this);
+        String userId = deviceUuidFactory.getDeviceUuidString();
+        Log.v(TAG, "Get UUID-> userId: " + (String) userId);
 
         ///////////////////////////////////////////
         // DUMMY DATA BELOW
@@ -204,7 +210,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(41.738362, -86.097086))
                     .icon(pinkPin)
-                    .title("Hey Ho Lets Go"));
+                    .title("Patty Today, 8:43 PM, 6.3 y"));
             if (mMap != null) {
                 setUpMap();
             }
@@ -229,4 +235,5 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("Marker"));
     }
+
 }
