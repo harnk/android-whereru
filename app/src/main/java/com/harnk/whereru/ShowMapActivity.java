@@ -31,9 +31,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.loopj.android.http.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import cz.msebera.android.httpclient.Header;
 
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -44,6 +48,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     //GCM stuff
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "SCXTT";
+    private String response;
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private ProgressBar mRegistrationProgressBar;
@@ -110,7 +115,40 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 your_array_list );
 
         messageList.setAdapter(arrayAdapter);
-///////////////////////////////////////////
+        ///////////////////////////////////////////
+
+
+        ///////////////////////////////////
+        //Do a test API call
+        AsyncHttpClient client = new AsyncHttpClient();
+//        client.post(this, "http://www.altcoinfolio.com//whereruprod/api/api.php", params, myResponseHandler)
+        client.get("http://www.google.com/uds/GnewsSearch?q=Obama&v=1.0", new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", " + headers + ", " + response);
+                // called when response HTTP status is "200 OK"
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.v(TAG, "API call response out of catch = " + response);
+
+        //END test API call
+        ///////////////////////////////////
 
     }
 
@@ -210,7 +248,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(41.738362, -86.097086))
                     .icon(pinkPin)
-                    .title("Patty Today, 8:43 PM, 6.3 y"));
+                    .title("Patty - Today, 8:43 PM, 6.3 y"));
             if (mMap != null) {
                 setUpMap();
             }

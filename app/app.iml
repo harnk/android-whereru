@@ -132,6 +132,7 @@
     <orderEntry type="library" exported="" name="play-services-analytics-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-drive-8.3.0" level="project" />
+    <orderEntry type="library" exported="" name="httpclient-4.3.6" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.0.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.0.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-cast-8.3.0" level="project" />
@@ -145,6 +146,8 @@
     <orderEntry type="library" exported="" name="play-services-maps-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-nearby-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-fitness-8.3.0" level="project" />
+    <orderEntry type="library" exported="" name="android-async-http-1.4.9" level="project" />
     <orderEntry type="library" exported="" name="play-services-panorama-8.3.0" level="project" />
+    <orderEntry type="library" exported="" name="org.apache.http.legacy-android-23" level="project" />
   </component>
 </module>
