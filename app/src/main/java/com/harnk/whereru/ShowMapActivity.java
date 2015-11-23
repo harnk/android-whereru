@@ -92,8 +92,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             startService(intent);
         }
         deviceUuidFactory = new DeviceUuidFactory(this);
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.init(this.getApplicationContext());
         String userId = deviceUuidFactory.getDeviceUuidString();
+        deviceSingleton.setUserId(userId);
         Log.v(TAG, "Get UUID-> userId: " + (String) userId);
+        Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
 
         ///////////////////////////////////////////
         // DUMMY DATA BELOW

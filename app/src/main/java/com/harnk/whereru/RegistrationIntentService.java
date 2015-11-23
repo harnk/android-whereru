@@ -41,6 +41,8 @@ public class RegistrationIntentService extends IntentService {
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
             Log.i(TAG, "GCM Registration Length: "+ token.length() + " Token: " + token);
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            deviceSingleton.setGcmToken(token);
 
             // TODO: Implement this method to send any registration to your app's servers.
             sendRegistrationToServer(token);
