@@ -33,6 +33,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.loopj.android.http.*;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -115,14 +120,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 your_array_list );
 
         messageList.setAdapter(arrayAdapter);
+        //END Dummy data
         ///////////////////////////////////////////
 
 
         ///////////////////////////////////
         //Do a test API call
         AsyncHttpClient client = new AsyncHttpClient();
-//        client.post(this, "http://www.altcoinfolio.com//whereruprod/api/api.php", params, myResponseHandler)
-        client.get("http://www.google.com/uds/GnewsSearch?q=Obama&v=1.0", new AsyncHttpResponseHandler() {
+        RequestParams params = new RequestParams();
+        params.put("cmd", "getroom");
+        params.put("user_id", "def4761aee983c99bbb5935f51a186e3");
+        params.put("location", "41.739567, -86.098872");
+        params.put("text", "notused");
+
+        client.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -130,7 +141,56 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                Log.v(TAG, "API call onSuccess = " + statusCode + ", " + headers + ", " + response);
+                //setting the new location AND GETTING THE JSON RESPONSE!
+
+                String decoded = null;  // example for one encoding type
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                        ", decoded:" + decoded);
+
+
+                JSONObject jObj = null;
+                try {
+                    jObj = new JSONObject(decoded);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
+                    JSONArray list = new JSONArray(decoded);
+                    Log.v(TAG, "list.length: " + list.length());
+                    for (int i=0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+
+                        String nickName = obj.getString("nickname");
+                        char ch = nickName.charAt(0);
+                        int asciiCode = (int) ch;
+                        int digit = asciiCode % 10;
+                        int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
+
+
+                        Log.v(TAG, "nickname: " + obj.getString("nickname") + " char: " + ch + " asciiCode: " + asciiCode + " digit: " + digit);
+//                        Log.v(TAG, "location: " + obj.getString("location"));
+//                        Log.v(TAG, "loc_time: " + obj.getString("loc_time"));
+
+                        String[] latlong =  obj.getString("location").split(",");
+                        double latitude = Double.parseDouble(latlong[0]);
+                        double longitude = Double.parseDouble(latlong[1]);
+
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .icon(BitmapDescriptorFactory.fromResource(resID))
+                                .title(obj.getString("nickname")));
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 // called when response HTTP status is "200 OK"
             }
 
@@ -237,18 +297,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     .getMap();
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.739362, -86.099086), 16.0f));
             // Check if we were successful in obtaining the map.
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(41.739362, -86.098086))
-                    .icon(bluePin)
-                    .title("Hey Ho Lets Go"));
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(41.739062, -86.097586))
-                    .icon(goldPin)
-                    .title("Hey Ho Lets Go"));
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(41.738362, -86.097086))
-                    .icon(pinkPin)
-                    .title("Patty - Today, 8:43 PM, 6.3 y"));
+//            mMap.addMarker(new MarkerOptions()
+//                    .position(new LatLng(41.738362, -86.097086))
+//                    .icon(pinkPin)
+//                    .title("Fake - Today, 8:43 PM, 6.3 y"));
             if (mMap != null) {
                 setUpMap();
             }
