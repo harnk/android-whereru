@@ -5,6 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -18,9 +24,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
@@ -44,7 +53,8 @@ import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
 
-public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private ListView messageList;
@@ -57,6 +67,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private ProgressBar mRegistrationProgressBar;
+
+    //Location service
+    public GoogleApiClient mGoogleApiClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +113,15 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         Log.v(TAG, "Get UUID-> userId: " + (String) userId);
         Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
 
+        //Google API build
+        buildGoogleApiClient();
+
+        //Use the LocationManager class to obtain updated GPS locations
+        LocationManager mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        LocationListener mlocListener = new MyLocationListener();
+        mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
+
+
         ///////////////////////////////////////////
         // DUMMY DATA BELOW
         List<String> your_array_list = new ArrayList<String>();
@@ -128,7 +151,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         ///////////////////////////////////////////
 
 
-        ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////
         //Do a test API call
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -167,7 +190,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 try {
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
-                    Log.v(TAG, "list.length: " + list.length());
+                    Log.v(TAG, "API Call returned list.length: " + list.length());
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 
@@ -178,7 +201,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
 
 
-                        Log.v(TAG, "nickname: " + obj.getString("nickname") + " char: " + ch + " asciiCode: " + asciiCode + " digit: " + digit);
+//                        Log.v(TAG, "nickname: " + obj.getString("nickname") + " char: " + ch + " asciiCode: " + asciiCode + " digit: " + digit);
 //                        Log.v(TAG, "location: " + obj.getString("location"));
 //                        Log.v(TAG, "loc_time: " + obj.getString("loc_time"));
 
@@ -329,5 +352,125 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("Marker"));
     }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Google geolocation API
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d("SCXTT", " onStart");
+        mGoogleApiClient.connect();
+    }
+
+    protected void onStop() {
+        super.onStop();
+        Log.d("SCXTT", " onStop");
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+    public void onConnectionSuspended(int cause) {
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // TODO Auto-generated method stub
+        Log.d("SCXTT", " onConnectionFailed " + result.toString());
+
+    }
+
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        Log.v("SCXTT", "Found the location");
+        if (mLastLocation != null) {
+            // Store it in the singleton
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            deviceSingleton.setMyNewLocation(mLastLocation);
+
+            String mLatitudeText = String.valueOf(mLastLocation.getLatitude());
+            String mLongitudeText = String.valueOf(mLastLocation.getLongitude());
+            Log.d("SCXTT", " mLastLocation: " + mLatitudeText + ", " + mLongitudeText);
+            //ALSO Store this in the singleton
+            deviceSingleton.setMyLocStr(mLatitudeText + ", " + mLongitudeText);
+            //play beep
+            try {
+                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                r.play();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            //Store this in the singleton
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+//            deviceSingleton.init(this.getApplicationContext());
+            //If no last loc then seed it to be the Statue of Liberty
+            Location myLoc = new Location("dummyprovider");
+            myLoc.setLatitude(40.689124);
+            myLoc.setLongitude(-74.044611);
+            deviceSingleton.setMyNewLocation(myLoc);
+            Log.d("SCXTT", " deviceSingleton.setMyNewLocation(): " + myLoc.toString());
+        }
+    }
+
+    public void onDisconnected() {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* Class My Location Listener */
+    public class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location loc) {
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+
+            String oldLoc = deviceSingleton.getMyLocStr();
+            String newLoc = loc.getLatitude() + ", " + loc.getLongitude();
+
+            if (oldLoc.equals(newLoc)) {
+//                Log.d(TAG, "WE DIDNT REALLY MOVE");
+            } else {
+                Log.d(TAG, "WE MOVED oldLoc:[" + oldLoc + "] newLoc:[" + newLoc + "]");
+            }
+
+            deviceSingleton.setMyNewLocation(loc);
+            deviceSingleton.setMyLocStr(newLoc);
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            Log.d(TAG, "GPS Disabled");
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            Log.d(TAG, "GPS Enabled");
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d(TAG, "GPS onStatusChanged: " + provider);
+
+        }
+
+    }/* End of Class MyLocationListener */
 
 }
