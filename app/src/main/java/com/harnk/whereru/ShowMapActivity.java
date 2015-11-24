@@ -119,6 +119,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //Use the LocationManager class to obtain updated GPS locations
         LocationManager mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         LocationListener mlocListener = new MyLocationListener();
+        //                                                               0, 0, is minTime ms, minDistance meters
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
 
@@ -188,6 +189,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     e.printStackTrace();
                 }
                 try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
                     Log.v(TAG, "API Call returned list.length: " + list.length());
@@ -209,10 +211,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         double latitude = Double.parseDouble(latlong[0]);
                         double longitude = Double.parseDouble(latlong[1]);
 
+                        //Get distance from me to LatLng for the title
+                        Location oldLoc = deviceSingleton.getMyNewLocation();
+
+                        Location pinLoc = new Location("dummyprovider");
+                        pinLoc.setLatitude(latitude);
+                        pinLoc.setLongitude(longitude);
+
+                        float distanceBetween = oldLoc.distanceTo(pinLoc);
+                        String annotationTitle = obj.getString("nickname") + "  " + obj.getString("loc_time") + ", "+ distanceBetween + " m";
+
                         mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .icon(BitmapDescriptorFactory.fromResource(resID))
-                                .title(obj.getString("nickname")));
+                                .title(annotationTitle));
 
                     }
                 } catch (JSONException e) {
@@ -440,17 +452,19 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         public void onLocationChanged(Location loc) {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
 
-            String oldLoc = deviceSingleton.getMyLocStr();
-            String newLoc = loc.getLatitude() + ", " + loc.getLongitude();
+            String oldLocStr = deviceSingleton.getMyLocStr();
+            String newLocStr = loc.getLatitude() + ", " + loc.getLongitude();
 
-            if (oldLoc.equals(newLoc)) {
+            if (oldLocStr.equals(newLocStr)) {
 //                Log.d(TAG, "WE DIDNT REALLY MOVE");
             } else {
-                Log.d(TAG, "WE MOVED oldLoc:[" + oldLoc + "] newLoc:[" + newLoc + "]");
+                Location oldLoc = deviceSingleton.getMyNewLocation();
+                float distanceMoved = oldLoc.distanceTo(loc);
+                Log.d(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
             }
 
             deviceSingleton.setMyNewLocation(loc);
-            deviceSingleton.setMyLocStr(newLoc);
+            deviceSingleton.setMyLocStr(newLocStr);
 
         }
 
@@ -467,7 +481,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(TAG, "GPS onStatusChanged: " + provider);
+            Log.d(TAG, "GPS onStatusChanged provider: " + provider + ", status: " + status + ", extras: " + extras);
 
         }
 
