@@ -47,6 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -219,7 +220,28 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         pinLoc.setLongitude(longitude);
 
                         float distanceBetween = oldLoc.distanceTo(pinLoc);
-                        String annotationTitle = obj.getString("nickname") + "  " + obj.getString("loc_time") + ", "+ distanceBetween + " m";
+                        float distanceInYards = (float) (distanceBetween * 1.09361);
+                        float distanceInMiles = distanceInYards / 1760;
+
+                        String pinDisplayDistance;
+
+
+                        if (distanceInYards > 500) {
+//                            String  = [NSString stringWithFormat:@"%@ %@, %.1f miles", senderName, dateString, distanceInMiles];
+                            pinDisplayDistance = Float.toString(distanceInMiles) + " miles";
+                        } else {
+//                            _label.text = [NSString stringWithFormat:@"%@ %@, %.1f y", senderName, dateString, distanceInYards];
+//                            DecimalFormat df = new DecimalFormat("#.0");
+//                            df.format(distanceInYards);
+                            pinDisplayDistance = Float.toString(distanceInYards) + " y";
+                        }
+
+
+
+
+
+
+                        String annotationTitle = obj.getString("nickname") + "  " + obj.getString("loc_time") + ", "+ pinDisplayDistance;
 
                         mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
