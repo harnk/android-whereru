@@ -228,12 +228,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
                         if (distanceInYards > 500) {
 //                            String  = [NSString stringWithFormat:@"%@ %@, %.1f miles", senderName, dateString, distanceInMiles];
-                            pinDisplayDistance = Float.toString(distanceInMiles) + " miles";
+                            String myMiles = String.format("%.1f", distanceInMiles);
+                            pinDisplayDistance = myMiles + " miles";
                         } else {
 //                            _label.text = [NSString stringWithFormat:@"%@ %@, %.1f y", senderName, dateString, distanceInYards];
-//                            DecimalFormat df = new DecimalFormat("#.0");
-//                            df.format(distanceInYards);
-                            pinDisplayDistance = Float.toString(distanceInYards) + " y";
+                            String myYards = String.format("%.1f", distanceInYards);
+                            pinDisplayDistance = myYards + " y";
                         }
 
 
