@@ -275,22 +275,15 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-//            // Only show items in the action bar relevant to this screen
-//            // if the drawer is not showing. Otherwise, let the drawer
-//            // decide what to show in the action bar.
-//            getMenuInflater().inflate(R.menu.main, menu);
-//
-//            restoreActionBar();
-//            return true;
-//        }
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
 //        getMenuInflater().inflate(R.layout.actionbar_menu, menu);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle("[room]");
-        actionBar.setHomeButtonEnabled(true);
-        return super.onCreateOptionsMenu(menu);
+//        ActionBar actionBar = getSupportActionBar();
+//        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+//        actionBar.setDisplayShowTitleEnabled(true);
+//        actionBar.setTitle("[room]");
+//        actionBar.setHomeButtonEnabled(true);
+//        return super.onCreateOptionsMenu(menu);
     }
 
 
