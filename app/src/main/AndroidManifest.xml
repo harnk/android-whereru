@@ -46,17 +46,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--<activity-->
-            <!--android:name=".ComposeActivity"-->
-            <!--android:label="Compose"-->
-            <!--android:screenOrientation="portrait" >-->
-        <!--</activity>-->
+        <activity
+            android:name=".ComposeActivity"
+            android:label="Compose"
+            android:screenOrientation="portrait" >
+        </activity>
 
-        <!--<activity-->
-            <!--android:name=".LoginActivity"-->
-            <!--android:label="Join Group"-->
-            <!--android:screenOrientation="portrait" >-->
-        <!--</activity>-->
+        <activity
+            android:name=".LoginActivity"
+            android:label="Join Group"
+            android:screenOrientation="portrait" >
+        </activity>
 
         <!-- [START gcm_receiver] -->
         <receiver

@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -286,6 +287,38 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //        return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_compose:
+                Log.v(TAG, "Compose selected");
+                Intent intent = new Intent(ShowMapActivity.this, ComposeActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_login:
+                Log.v(TAG, "Login selected");
+                Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+                startActivity(intent2);
+                break;
+            case R.id.action_pinpicker:
+                Log.v(TAG, "Pinpicker selected");
+
+                break;
+            case R.id.action_reload:
+                Log.v(TAG, "Reload selected");
+
+                break;
+            case R.id.action_sat:
+                Log.v(TAG, "Sat/Map selected");
+                if (mMap.getMapType()== 1 ) {
+                    mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                } else {
+                    mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected void onResume() {
