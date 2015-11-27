@@ -142,7 +142,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // postGetRoomMessages
-        final List<String> your_array_list = new ArrayList<String>();
 
         AsyncHttpClient client2 = new AsyncHttpClient();
         RequestParams params2 = new RequestParams();
@@ -220,27 +219,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
         ///////////////////////////////////////////
-        // DUMMY DATA BELOW
-        your_array_list.add("We are going to the lake");
-        your_array_list.add("I want to go with you");
-        your_array_list.add("Tonight you have to do homework. You know you can come with us silly fool!");
-
-        // This is the array adapter, it takes the context of the activity as a
-        // first parameter, the type of list view as a second parameter and your
-        // array as a third parameter.
-
-//        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                this,
-//                android.R.layout.simple_list_item_1,
-//                your_array_list );
-
+        // Temporary below - Set to use singleton tempTextArray for now
         this.arrayAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
                 deviceSingleton.getTempTextArray() );
 
         messageList.setAdapter(arrayAdapter);
-        //END Dummy data
         ///////////////////////////////////////////
 
 

@@ -76,7 +76,6 @@ public class DeviceSingleton {
         this.tempTextArray.add(message.getText());
     }
     // Temporary below
-
     public ArrayList<String> getTempTextArray() {
         return tempTextArray;
     }
