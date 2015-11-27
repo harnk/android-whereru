@@ -48,9 +48,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
@@ -60,6 +65,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private ListView messageList;
+    private ArrayAdapter<String> arrayAdapter;
     private DeviceUuidFactory deviceUuidFactory;
 
     //GCM stuff
@@ -73,6 +79,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     //Location service
     public GoogleApiClient mGoogleApiClient;
 
+
+    private void scrollMyListViewToBottom() {
+        messageList.post(new Runnable() {
+            @Override
+            public void run() {
+                // Select the last row so it will scroll into view...
+                messageList.setSelection(arrayAdapter.getCount() - 1);
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,30 +140,104 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //                                                               0, 0, is minTime ms, minDistance meters
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // postGetRoomMessages
+        final List<String> your_array_list = new ArrayList<String>();
+
+        AsyncHttpClient client2 = new AsyncHttpClient();
+        RequestParams params2 = new RequestParams();
+        params2.put("cmd", "getroommessages");
+        params2.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF"); //Ed iPad for testing
+        params2.put("location", "41.739567, -86.098872");
+        params2.put("secret_code", "harnk");
+
+        client2.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params2, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+
+                String decoded = null;  // example for one encoding type
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
+                        ", decoded:" + decoded);
+                JSONObject jObj = null;
+                try {
+                    jObj = new JSONObject(decoded);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    JSONArray list = new JSONArray(decoded);
+                    Log.v(TAG, "API Call returned list.length: " + list.length());
+                    for (int i = 0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+
+                        // JSON format is {"message_id":"1051","user_id":"8BF13A775C1844669F678DBB36F6D73D","nickname":"gramma null","message":"Good night all love you guys","location":"39.941742, -85.916614","secret_code":"harnk","time_posted":"2015-09-25 01:11:52"},
+                        String senderName = obj.getString("nickname");
+                        String text = obj.getString("message");
+                        String location = obj.getString("location");
+                        String dateStr = obj.getString("time_posted");
+                        Message message = new Message(senderName, dateStr, text, location);
+//                        Message message = new Message();
+//                        message.setSenderName(senderName);
+//                        message.setText(text);
+                        // Now add the message to the ArrayList
+                        deviceSingleton.addMessage(message);
+
+                        //Need to get these into the adapter
+                        Log.v(TAG, senderName + " - " + dateStr + " - " + location + " ADDED to Singleton ArrayList messages message: " + text);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // called when response HTTP status is "200 OK"
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.v(TAG, "API call response out of catch = " + response);
+        //END POSTGETROOMMESSAGES
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         ///////////////////////////////////////////
         // DUMMY DATA BELOW
-        List<String> your_array_list = new ArrayList<String>();
         your_array_list.add("We are going to the lake");
         your_array_list.add("I want to go with you");
         your_array_list.add("Tonight you have to do homework. You know you can come with us silly fool!");
-        your_array_list.add("I am wanting to see if this scrolls");
-        your_array_list.add("We are going to the lake");
-        your_array_list.add("I want to go with you");
-        your_array_list.add("Tonight you have to do homework. You know you can come with us silly fool!");
-        your_array_list.add("I am wanting to see if this scrolls");
-        your_array_list.add("We are going to the lake");
-        your_array_list.add("I want to go with you");
-        your_array_list.add("Tonight you have to do homework. You know you can come with us silly fool!");
-        your_array_list.add("I am wanting to see if this scrolls");
 
         // This is the array adapter, it takes the context of the activity as a
         // first parameter, the type of list view as a second parameter and your
         // array as a third parameter.
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+
+//        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+//                this,
+//                android.R.layout.simple_list_item_1,
+//                your_array_list );
+
+        this.arrayAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
-                your_array_list );
+                deviceSingleton.getTempTextArray() );
 
         messageList.setAdapter(arrayAdapter);
         //END Dummy data
@@ -159,7 +249,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         params.put("cmd", "getroom");
-        params.put("user_id", "def4761aee983c99bbb5935f51a186e3");
+        params.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF");
         params.put("location", "41.739567, -86.098872");
         params.put("text", "notused");
 
@@ -306,7 +396,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 break;
             case R.id.action_reload:
                 Log.v(TAG, "Reload selected");
-
+//                Temporary below
+                this.arrayAdapter.notifyDataSetChanged();
+                this.scrollMyListViewToBottom();
                 break;
             case R.id.action_sat:
                 Log.v(TAG, "Sat/Map selected");

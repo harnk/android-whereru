@@ -5,6 +5,7 @@ import android.location.Location;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,7 @@ import java.util.UUID;
 public class DeviceSingleton {
     private static DeviceSingleton mInstance = null;
 
-    private String deviceId;
+    private String deviceId; //not used
     private String userId;
     private String gcmToken;
     private String myLocStr;
@@ -21,6 +22,10 @@ public class DeviceSingleton {
     private boolean notificationsAreDisabled;
     private boolean imInARoom;
     private boolean mapIsActive;
+    private ArrayList<String> tempTextArray = new ArrayList<String>();
+
+    // Message array
+    private ArrayList<Message> messages = new ArrayList<Message>();
 
     private Context appContext;
     public void init(Context context){
@@ -32,7 +37,6 @@ public class DeviceSingleton {
     }
 
     private DeviceSingleton(){
-
     }
 
     //I am not using deviceId, I am instead using userId for the user's unique GUID
@@ -58,8 +62,32 @@ public class DeviceSingleton {
         return mInstance;
     }
 
-    public String getDeviceId(){
-        return this.deviceId;
+    public void setMessages(ArrayList<Message> messages) {
+        this.messages = messages;
+    }
+
+    public ArrayList<Message> getMessages() {
+        return messages;
+    }
+
+    public void addMessage(Message message){
+        this.messages.add(message);
+        //Temporary stuff below, will replace later when the custom adapter is done
+        this.tempTextArray.add(message.getText());
+    }
+    // Temporary below
+
+    public ArrayList<String> getTempTextArray() {
+        return tempTextArray;
+    }
+
+    // not used
+    public String getDeviceId() {
+        return deviceId;
+    }
+    // not used
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getUserId() {
