@@ -619,8 +619,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     public void postGetRoom() {
-        Log.v(TAG, "postGetRoom should happene every 5 secs");
-//        postGetRoomWIP();
+        Log.v(TAG, "postGetRoom should happene every 5 secs ->WIP");
+        postGetRoomWIP();
     }
 
     public void postGetRoomWIP() {
@@ -667,6 +667,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     JSONArray list = new JSONArray(decoded);
                     Log.v(TAG, "API Call returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                    //SCXTT WIP next line is a bandaid to be removed when i keep an array of the marker objects
+                    mMap.clear();
+
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 
