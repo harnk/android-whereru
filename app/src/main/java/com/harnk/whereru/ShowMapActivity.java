@@ -31,6 +31,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
@@ -39,6 +40,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.loopj.android.http.*;
@@ -249,6 +252,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 //setting the new location AND GETTING THE JSON RESPONSE!
 
                 String decoded = null;  // example for one encoding type
+
                 try {
                     decoded = new String(response, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
@@ -270,6 +274,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
                     Log.v(TAG, "API Call returned list.length: " + list.length());
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 
@@ -318,13 +323,22 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
                         String annotationTitle = obj.getString("nickname") + "  " + obj.getString("loc_time") + ", "+ pinDisplayDistance;
-
-                        mMap.addMarker(new MarkerOptions()
+                        Marker m = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .icon(BitmapDescriptorFactory.fromResource(resID))
-                                .title(annotationTitle));
+                                .title(annotationTitle)
+                                .anchor(0.4727f, 0.5f));
+
+                        builder.include(m.getPosition());
 
                     }
+                    //Back up camera zoom level to see all pins
+                    //this should prob come out of here and go into the main UI thread and use saved objects
+                    LatLngBounds bounds = builder.build();
+                    int padding = 20; // offset from edges of the map in pixels
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    mMap.moveCamera(cu);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -384,6 +398,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                Temporary below
                 this.arrayAdapter.notifyDataSetChanged();
                 this.scrollMyListViewToBottom();
+                centerMapOnMyLoc();
                 break;
             case R.id.action_sat:
                 Log.v(TAG, "Sat/Map selected");
@@ -459,7 +474,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.739362, -86.099086), 16.0f));
+//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.739362, -86.099086), 16.0f));
+
+
+//            centerMapOnMyLoc();
+
             // Check if we were successful in obtaining the map.
 //            mMap.addMarker(new MarkerOptions()
 //                    .position(new LatLng(41.738362, -86.097086))
@@ -471,12 +490,23 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
+    private void centerMapOnMyLoc() {
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        String myLoc = deviceSingleton.getMyLocStr();
+        String[] latlong =  myLoc.split(",");
+        double latitude = Double.parseDouble(latlong[0]);
+        double longitude = Double.parseDouble(latlong[1]);
+//        scxtt wip take next line out for now
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12.0f)); // was 16.0f
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
         map.addMarker(new MarkerOptions()
                 .position(new LatLng(41.739362, -86.098086))
                 .title("Hello world"));
-        Log.v("SCXTT", "doing onMapReady callback is this working");
+        Log.v("SCXTT", "doing onMapReady callback is this working but LOCATION is still hardcoded and wrong");
+//        centerMapOnMyLoc();
     }
 
 
@@ -487,7 +517,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("Marker"));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("My Location - this is currently hardcoded and wrong"));
     }
 
 
@@ -543,6 +573,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             Log.d("SCXTT", " mLastLocation: " + mLatitudeText + ", " + mLongitudeText);
             //ALSO Store this in the singleton
             deviceSingleton.setMyLocStr(mLatitudeText + ", " + mLongitudeText);
+
+
+
+//            centerMapOnMyLoc();
+
+
+
+
             //play beep
             try {
                 Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -586,6 +624,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 Location oldLoc = deviceSingleton.getMyNewLocation();
                 float distanceMoved = oldLoc.distanceTo(loc);
                 Log.d(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
+                centerMapOnMyLoc();
             }
 
             deviceSingleton.setMyNewLocation(loc);
