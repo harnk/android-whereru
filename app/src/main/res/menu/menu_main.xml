@@ -6,7 +6,7 @@
     <item android:id="@+id/action_pinpicker"
         android:orderInCategory="101"
         android:title="pin"
-        android:icon="@drawable/bluemenuitem"
+        android:icon="@drawable/pinmenuitem"
         app:showAsAction="always"/>
     <item android:id="@+id/action_compose"
         android:orderInCategory="102"
