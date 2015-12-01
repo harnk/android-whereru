@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -82,6 +83,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     //Location service
     public GoogleApiClient mGoogleApiClient;
 
+    //Interval timers
+    private int mInterval = 5000; // 5 seconds by default, can be changed later
+    private Handler mHandler;
+
 
     private void scrollMyListViewToBottom() {
         messageList.post(new Runnable() {
@@ -99,6 +104,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         setContentView(R.layout.activity_show_map);
         MapsInitializer.initialize(this);
         setUpMapIfNeeded();
+
+        //Timer setup
+        mHandler = new Handler();
+        startRepeatingTask();
+
         messageList = (ListView) findViewById(R.id.listView);
 
         //GCM stuff
@@ -233,7 +243,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        //Do a test API call
+        //Do a getroom API call
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         params.put("cmd", "getroom");
@@ -317,16 +327,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                             pinDisplayDistance = myYards + " y";
                         }
 
-
-
-
-
-
-                        String annotationTitle = obj.getString("nickname") + "  " + obj.getString("loc_time") + ", "+ pinDisplayDistance;
+                        String annotationTitle = obj.getString("nickname");
+                        String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
                         Marker m = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .icon(BitmapDescriptorFactory.fromResource(resID))
                                 .title(annotationTitle)
+                                .snippet(annotationSnippet)
                                 .anchor(0.4727f, 0.5f));
 
                         builder.include(m.getPosition());
@@ -358,10 +365,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         });
         Log.v(TAG, "API call response out of catch = " + response);
 
-        //END test API call
+        //END getroom API call
         ///////////////////////////////////
 
     }
+////END onCreate //////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -423,7 +431,24 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        stopRepeatingTask();
         super.onPause();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d("SCXTT", " onStart");
+        mGoogleApiClient.connect();
+    }
+
+    protected void onStop() {
+        super.onStop();
+        Log.d("SCXTT", " onStop");
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     /**
@@ -531,21 +556,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 .build();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d("SCXTT", " onStart");
-        mGoogleApiClient.connect();
-    }
-
-    protected void onStop() {
-        super.onStop();
-        Log.d("SCXTT", " onStop");
-
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }
     public void onConnectionSuspended(int cause) {
         mGoogleApiClient.connect();
     }
@@ -607,6 +617,162 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         // TODO Auto-generated method stub
 
     }
+
+    public void postGetRoom() {
+        Log.v(TAG, "postGetRoom should happene every 5 secs");
+//        postGetRoomWIP();
+    }
+
+    public void postGetRoomWIP() {
+        Log.v(TAG, "postGetRoom should happene every 5 secs");
+        //Do a getroom API call
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("cmd", "getroom");
+        params.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF");
+        params.put("location", "41.739567, -86.098872");
+        params.put("text", "notused");
+
+        client.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+
+                String decoded = null;  // example for one encoding type
+
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                        ", decoded:" + decoded);
+
+
+                JSONObject jObj = null;
+                try {
+                    jObj = new JSONObject(decoded);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
+                    JSONArray list = new JSONArray(decoded);
+                    Log.v(TAG, "API Call returned list.length: " + list.length());
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (int i=0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+
+                        String nickName = obj.getString("nickname");
+                        char ch = nickName.charAt(0);
+                        int asciiCode = (int) ch;
+                        int digit = asciiCode % 10;
+                        int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
+
+                        String[] latlong =  obj.getString("location").split(",");
+                        double latitude = Double.parseDouble(latlong[0]);
+                        double longitude = Double.parseDouble(latlong[1]);
+
+                        //Get distance from me to LatLng for the title
+                        Location oldLoc = deviceSingleton.getMyNewLocation();
+
+                        Location pinLoc = new Location("dummyprovider");
+                        pinLoc.setLatitude(latitude);
+                        pinLoc.setLongitude(longitude);
+
+                        float distanceBetween = oldLoc.distanceTo(pinLoc);
+                        float distanceInYards = (float) (distanceBetween * 1.09361);
+                        float distanceInMiles = distanceInYards / 1760;
+
+                        String pinDisplayDistance;
+
+                        if (distanceInYards > 500) {
+                            String myMiles = String.format("%.1f", distanceInMiles);
+                            pinDisplayDistance = myMiles + " miles";
+                        } else {
+                            String myYards = String.format("%.1f", distanceInYards);
+                            pinDisplayDistance = myYards + " y";
+                        }
+
+                        String annotationTitle = obj.getString("nickname");
+                        String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
+                        Marker m = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .icon(BitmapDescriptorFactory.fromResource(resID))
+                                .title(annotationTitle)
+                                .snippet(annotationSnippet)
+                                .anchor(0.4727f, 0.5f));
+
+                        builder.include(m.getPosition());
+
+                    }
+//                    //Back up camera zoom level to see all pins
+//                    LatLngBounds bounds = builder.build();
+//                    int padding = 20; // offset from edges of the map in pixels
+//                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+//                    mMap.moveCamera(cu);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.v(TAG, "API call response out of catch = " + response);
+
+        //END getroom API call
+        //end getroom code
+    }
+
+
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+//            updateStatus(); //this function can change value of mInterval.
+            postGetRoom();
+            mHandler.postDelayed(mStatusChecker, mInterval);
+        }
+    };
+
+    void startRepeatingTask() {
+        Log.v(TAG, "startRepeatingTask");
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
+//    public void startGetRoomTimer() {
+//        Log.v(TAG, "startGetRoomTimer");
+//        this.stopGetRoomTimer();
+//        //iOS _isFromNotification = YES;
+//        getRoomTimer = new Handler();
+//        postGetRoom();
+//    }
+//
+//    public void stopGetRoomTimer() {
+//        Log.v(TAG, "stopGetRoomTimer");
+//        getRoomTimer.removeCallbacks(mStatusChecker);
+//
+//    }
 
     /* Class My Location Listener */
     public class MyLocationListener implements LocationListener {
