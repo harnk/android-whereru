@@ -67,7 +67,10 @@ import cz.msebera.android.httpclient.Header;
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    public static final String API_URL = "http://www.altcoinfolio.com//whereruprod/api/api.php";
+
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private List<Marker> markers = new ArrayList<Marker>();
     private ListView messageList;
     private ArrayAdapter<String> arrayAdapter;
     private DeviceUuidFactory deviceUuidFactory;
@@ -163,7 +166,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params2.put("location", "41.739567, -86.098872");
         params2.put("secret_code", "harnk");
 
-        client2.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params2, new AsyncHttpResponseHandler() {
+        client2.post(API_URL, params2, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -251,7 +254,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("location", "41.739567, -86.098872");
         params.put("text", "notused");
 
-        client.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params, new AsyncHttpResponseHandler() {
+        client.post(API_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -335,6 +338,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 .title(annotationTitle)
                                 .snippet(annotationSnippet)
                                 .anchor(0.4727f, 0.5f));
+                        markers.add(m);
 
                         builder.include(m.getPosition());
 
@@ -624,7 +628,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     public void postGetRoomWIP() {
-        Log.v(TAG, "postGetRoom should happene every 5 secs");
         //Do a getroom API call
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -633,7 +636,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("location", "41.739567, -86.098872");
         params.put("text", "notused");
 
-        client.post("http://www.altcoinfolio.com//whereruprod/api/api.php", params, new AsyncHttpResponseHandler() {
+        client.post(API_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -667,9 +670,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     JSONArray list = new JSONArray(decoded);
                     Log.v(TAG, "API Call returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-                    //SCXTT WIP next line is a bandaid to be removed when i keep an array of the marker objects
-                    mMap.clear();
 
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
@@ -707,14 +707,31 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
                         String annotationTitle = obj.getString("nickname");
                         String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
-                        Marker m = mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latitude, longitude))
-                                .icon(BitmapDescriptorFactory.fromResource(resID))
-                                .title(annotationTitle)
-                                .snippet(annotationSnippet)
-                                .anchor(0.4727f, 0.5f));
 
-                        builder.include(m.getPosition());
+                        for (Marker m : markers) {
+                            if (m.getTitle().equals(annotationTitle)){
+                                //groove the marker baby
+                                m.setPosition(new LatLng(latitude, longitude));
+                                //update the timestamp and distance in the snippet too
+                                //SCXTT WIP test
+//                                m.hideInfoWindow();
+                                //SCXTT debug
+                                if (m.getTitle().equals("5sSimulator")){
+                                    m.setSnippet("WHA " + annotationSnippet);
+                                    m.showInfoWindow();
+                                    Log.v(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
+                                }
+                                break;
+                            }
+                        }
+//                        Marker m = mMap.addMarker(new MarkerOptions()
+//                                .position(new LatLng(latitude, longitude))
+//                                .icon(BitmapDescriptorFactory.fromResource(resID))
+//                                .title(annotationTitle)
+//                                .snippet(annotationSnippet)
+//                                .anchor(0.4727f, 0.5f));
+
+//                        builder.include(m.getPosition());
 
                     }
 //                    //Back up camera zoom level to see all pins
