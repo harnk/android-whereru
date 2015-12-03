@@ -29,11 +29,14 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/edittext"
             android:inputType="textPersonName"
             android:hint="Your Nickname"
             android:ems="10"
             android:id="@+id/nickName"
             android:layout_below="@+id/textView"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
@@ -42,9 +45,13 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/edittext"
             android:id="@+id/mapGroup"
             android:hint="Map group Name to Join or Create"
             android:layout_below="@+id/nickName"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_marginTop="10dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
              />

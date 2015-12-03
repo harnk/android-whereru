@@ -22,6 +22,7 @@ public class DeviceSingleton {
     private boolean notificationsAreDisabled;
     private boolean imInARoom;
     private boolean mapIsActive;
+    private boolean joinedChat;
     private ArrayList<String> tempTextArray = new ArrayList<String>();
 
     // Message array
@@ -32,6 +33,8 @@ public class DeviceSingleton {
         if(appContext == null){
             appContext = context;
         }
+        //SCXTT WIP need to see this next boolean from saved device setting
+        joinedChat = false;
         deviceId = this.findDeviceID();
 //        myCurrentLoc = this.getMyCurrentLoc;
     }
@@ -129,13 +132,9 @@ public class DeviceSingleton {
         this.notificationsAreDisabled = notificationsAreDisabled;
     }
 
-    public boolean isImInARoom() {
-        return imInARoom;
-    }
+    public boolean isImInARoom() {return imInARoom;}
 
-    public void setImInARoom(boolean imInARoom) {
-        this.imInARoom = imInARoom;
-    }
+    public void setImInARoom(boolean imInARoom) {this.imInARoom = imInARoom;}
 
     public boolean isMapIsActive() {
         return mapIsActive;
@@ -144,5 +143,9 @@ public class DeviceSingleton {
     public void setMapIsActive(boolean mapIsActive) {
         this.mapIsActive = mapIsActive;
     }
+
+    public boolean isJoinedChat() { return joinedChat; }
+
+    public void setJoinedChat(boolean joinedChat) { this.joinedChat = joinedChat; }
 
 }

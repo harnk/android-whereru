@@ -110,7 +110,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         //Timer setup
         mHandler = new Handler();
-        startRepeatingTask();
+//        startRepeatingTask();
 
         messageList = (ListView) findViewById(R.id.listView);
 
@@ -313,9 +313,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         pinLoc.setLatitude(latitude);
                         pinLoc.setLongitude(longitude);
 
-                        float distanceBetween = oldLoc.distanceTo(pinLoc);
-                        float distanceInYards = (float) (distanceBetween * 1.09361);
-                        float distanceInMiles = distanceInYards / 1760;
+                        float distanceBetween;
+                        float distanceInYards;
+                        float distanceInMiles;
+
+                        if (oldLoc == null ) {
+                            distanceBetween = 0;
+                            distanceInYards = 0;
+                            distanceInMiles = 0;
+
+                        } else {
+                            distanceBetween = oldLoc.distanceTo(pinLoc);
+                            distanceInYards = (float) (distanceBetween * 1.09361);
+                            distanceInMiles = distanceInYards / 1760;
+                        }
 
                         String pinDisplayDistance;
 
@@ -428,6 +439,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        startRepeatingTask();
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
     }
@@ -444,6 +456,19 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         super.onStart();
         Log.d("SCXTT", " onStart");
         mGoogleApiClient.connect();
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        //if NOT singleton.joinedChat, set singleton.imInARoom=false, show LoginActivity
+        // Need to store joinedChat on device and check that instead SCXTT WIP
+        if (!deviceSingleton.isJoinedChat()) {
+            deviceSingleton.setImInARoom(false);
+            Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+            startActivity(intent2);
+        } else {
+            deviceSingleton.setImInARoom(true);
+            // do postGetRoomMessages, postGetRoom
+            // refresh listview, send local notification to startRepeatingTask (now in onResume)
+        }
+
     }
 
     protected void onStop() {
@@ -691,9 +716,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         pinLoc.setLatitude(latitude);
                         pinLoc.setLongitude(longitude);
 
-                        float distanceBetween = oldLoc.distanceTo(pinLoc);
-                        float distanceInYards = (float) (distanceBetween * 1.09361);
-                        float distanceInMiles = distanceInYards / 1760;
+                        float distanceBetween;
+                        float distanceInYards;
+                        float distanceInMiles;
+
+                        if (oldLoc == null ) {
+                            distanceBetween = 0;
+                            distanceInYards = 0;
+                            distanceInMiles = 0;
+
+                        } else {
+                            distanceBetween = oldLoc.distanceTo(pinLoc);
+                            distanceInYards = (float) (distanceBetween * 1.09361);
+                            distanceInMiles = distanceInYards / 1760;
+                        }
 
                         String pinDisplayDistance;
 
