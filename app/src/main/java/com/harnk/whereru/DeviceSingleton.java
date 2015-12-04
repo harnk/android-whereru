@@ -18,17 +18,17 @@ public class DeviceSingleton {
     private String userId;
     private String gcmToken;
     private String myLocStr;
+    private String nickname, secretCode;
     private Location myNewLocation;
     private boolean notificationsAreDisabled;
     private boolean imInARoom;
     private boolean mapIsActive;
     private boolean joinedChat;
     private ArrayList<String> tempTextArray = new ArrayList<String>();
-
     // Message array
     private ArrayList<Message> messages = new ArrayList<Message>();
-
     private Context appContext;
+
     public void init(Context context){
         if(appContext == null){
             appContext = context;
@@ -115,6 +115,14 @@ public class DeviceSingleton {
     public void setMyLocStr(String myLocStr) {
         this.myLocStr = myLocStr;
     }
+
+    public String getNickname() { return nickname; }
+
+    public void setNickname(String myNickname) {this.nickname = myNickname; }
+
+    public String getSecretCode() { return secretCode; }
+
+    public void setSecretCode(String mySecretCode) {this.secretCode = mySecretCode; }
 
     public Location getMyNewLocation() {
         return myNewLocation;

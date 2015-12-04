@@ -101,6 +101,27 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         });
     }
 
+    private void loadSingletonWithSharedPrefs() {
+        Log.v(TAG, "loadSingletonWithSharedPrefs");
+        //Get SharedPreferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String savedNickname = prefs.getString("nickname", "");
+        String savedSecretCode = prefs.getString("secretCode", "");
+        Log.v(TAG, "Getting SharedPreferences ... Stored nickname is: " + savedNickname);
+
+        deviceUuidFactory = new DeviceUuidFactory(this);
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.init(this.getApplicationContext());
+        String userId = deviceUuidFactory.getDeviceUuidString();
+        deviceSingleton.setUserId(userId);
+        deviceSingleton.setNickname(savedNickname);
+        deviceSingleton.setSecretCode(savedSecretCode);
+        Log.v(TAG, "Get UUID-> userId: " + (String) userId);
+        Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
+
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,13 +160,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
-        deviceUuidFactory = new DeviceUuidFactory(this);
-        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-        deviceSingleton.init(this.getApplicationContext());
-        String userId = deviceUuidFactory.getDeviceUuidString();
-        deviceSingleton.setUserId(userId);
-        Log.v(TAG, "Get UUID-> userId: " + (String) userId);
-        Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
+
+
+        //Get Stored SharedPrefs and put them into the singleton
+        loadSingletonWithSharedPrefs();
+
+
 
         //Google API build
         buildGoogleApiClient();
@@ -157,7 +177,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // postGetRoomMessages
+        // postGetRoomMessages SCXTT TEMP
 
         AsyncHttpClient client2 = new AsyncHttpClient();
         RequestParams params2 = new RequestParams();
@@ -236,6 +256,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         ///////////////////////////////////////////
         // Temporary below - Set to use singleton tempTextArray for now
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         this.arrayAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
@@ -838,7 +859,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         public void onLocationChanged(Location loc) {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
 
-            String oldLocStr = deviceSingleton.getMyLocStr();
+            String oldLocStr = deviceSingleton.getMyLocStr() + "";
             String newLocStr = loc.getLatitude() + ", " + loc.getLongitude();
 
             if (oldLocStr.equals(newLocStr)) {
