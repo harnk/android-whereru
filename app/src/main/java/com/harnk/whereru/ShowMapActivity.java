@@ -107,7 +107,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String savedNickname = prefs.getString("nickname", "");
         String savedSecretCode = prefs.getString("secretCode", "");
-        Log.v(TAG, "Getting SharedPreferences ... Stored nickname is: " + savedNickname);
+        String savedLocStr = prefs.getString("savedLocStr", "");
+        Log.d(TAG, "Getting SharedPreferences ... Stored nickname is: " + savedNickname + " secretCode: " + savedSecretCode + " savedLocStr: " + savedLocStr);
 
         deviceUuidFactory = new DeviceUuidFactory(this);
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
@@ -116,6 +117,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         deviceSingleton.setUserId(userId);
         deviceSingleton.setNickname(savedNickname);
         deviceSingleton.setSecretCode(savedSecretCode);
+        deviceSingleton.setMyLocStr(savedLocStr);
         Log.v(TAG, "Get UUID-> userId: " + (String) userId);
         Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
 
@@ -147,10 +149,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 boolean sentToken = sharedPreferences
                         .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
-                    Log.v(TAG, getString(R.string.gcm_send_message));
+                    Log.d(TAG, getString(R.string.gcm_send_message));
 //                    mInformationTextView.setText(getString(R.string.gcm_send_message));
                 } else {
-                    Log.v(TAG, getString(R.string.token_error_message));
+                    Log.d(TAG, getString(R.string.token_error_message));
 //                    mInformationTextView.setText(getString(R.string.token_error_message));
                 }
             }
@@ -213,7 +215,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 try {
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     JSONArray list = new JSONArray(decoded);
-                    Log.v(TAG, "API Call returned list.length: " + list.length());
+                    Log.d(TAG, "API Call getroommessages returned list.length: " + list.length());
                     for (int i = 0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 
@@ -307,7 +309,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
-                    Log.v(TAG, "API Call returned list.length: " + list.length());
+                    Log.v(TAG, "API Call getroom returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
@@ -424,28 +426,28 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_compose:
-                Log.v(TAG, "Compose selected");
+                Log.d(TAG, "Compose selected");
                 Intent intent = new Intent(ShowMapActivity.this, ComposeActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_login:
-                Log.v(TAG, "Login selected");
+                Log.d(TAG, "Login selected");
                 Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
                 startActivity(intent2);
                 break;
             case R.id.action_pinpicker:
-                Log.v(TAG, "Pinpicker selected");
+                Log.d(TAG, "Pinpicker selected");
 
                 break;
             case R.id.action_reload:
-                Log.v(TAG, "Reload selected");
+                Log.d(TAG, "Reload selected");
 //                Temporary below
                 this.arrayAdapter.notifyDataSetChanged();
                 this.scrollMyListViewToBottom();
                 centerMapOnMyLoc();
                 break;
             case R.id.action_sat:
-                Log.v(TAG, "Sat/Map selected");
+                Log.d(TAG, "Sat/Map selected");
                 if (mMap.getMapType()== 1 ) {
                     mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 } else {
@@ -580,7 +582,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         map.addMarker(new MarkerOptions()
                 .position(new LatLng(41.739362, -86.098086))
                 .title("Hello world"));
-        Log.v("SCXTT", "doing onMapReady callback is this working but LOCATION is still hardcoded and wrong");
+        Log.d("SCXTT", "doing onMapReady callback is this working but LOCATION is still hardcoded and wrong");
 //        centerMapOnMyLoc();
     }
 
@@ -623,6 +625,15 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         Log.v("SCXTT", "Found the location");
+
+
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+
+
+
         if (mLastLocation != null) {
             // Store it in the singleton
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
@@ -631,10 +642,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             String mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             String mLongitudeText = String.valueOf(mLastLocation.getLongitude());
             Log.d("SCXTT", " mLastLocation: " + mLatitudeText + ", " + mLongitudeText);
+            editor.putString("savedLocStr", mLatitudeText + ", " + mLongitudeText);
+            editor.commit();
+
             //ALSO Store this in the singleton
             deviceSingleton.setMyLocStr(mLatitudeText + ", " + mLongitudeText);
-
-
 
 //            centerMapOnMyLoc();
 
@@ -656,9 +668,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //            deviceSingleton.init(this.getApplicationContext());
             //If no last loc then seed it to be the Statue of Liberty
             Location myLoc = new Location("dummyprovider");
+            String mySeedLocStr = "40.689124, -74.044611";
             myLoc.setLatitude(40.689124);
             myLoc.setLongitude(-74.044611);
             deviceSingleton.setMyNewLocation(myLoc);
+            editor.putString("savedLocStr", mySeedLocStr);
+            editor.commit();
             Log.d("SCXTT", " deviceSingleton.setMyNewLocation(): " + myLoc.toString());
         }
     }
@@ -714,7 +729,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
-                    Log.v(TAG, "API Call returned list.length: " + list.length());
+                    Log.d(TAG, "API Call postGetRoomWIP getroom returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
                     for (int i=0; i < list.length(); i++) {
@@ -776,7 +791,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 if (m.getTitle().equals("5sSimulator")){
                                     m.setSnippet("WHA " + annotationSnippet);
                                     m.showInfoWindow();
-                                    Log.v(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
+                                    Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
                                 }
                                 break;
                             }
@@ -830,7 +845,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     };
 
     void startRepeatingTask() {
-        Log.v(TAG, "startRepeatingTask");
+        Log.d(TAG, "startRepeatingTask");
         mStatusChecker.run();
     }
 
@@ -861,13 +876,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             String oldLocStr = deviceSingleton.getMyLocStr() + "";
             String newLocStr = loc.getLatitude() + ", " + loc.getLongitude();
-
             if (oldLocStr.equals(newLocStr)) {
 //                Log.d(TAG, "WE DIDNT REALLY MOVE");
             } else {
+                Log.v(TAG, "oldLoc: " + deviceSingleton.getMyNewLocation() + " loc: " + loc);
                 Location oldLoc = deviceSingleton.getMyNewLocation();
                 float distanceMoved = oldLoc.distanceTo(loc);
-                Log.d(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
+                Log.v(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
                 centerMapOnMyLoc();
             }
 
@@ -889,7 +904,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(TAG, "GPS onStatusChanged provider: " + provider + ", status: " + status + ", extras: " + extras);
+            Log.v(TAG, "GPS onStatusChanged provider: " + provider + ", status: " + status + ", extras: " + extras);
 
         }
 
