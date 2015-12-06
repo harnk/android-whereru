@@ -67,7 +67,7 @@ import cz.msebera.android.httpclient.Header;
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    public static final String API_URL = "http://www.altcoinfolio.com//whereruprod/api/api.php";
+//    public static final String API_URL = "http://www.altcoinfolio.com//whereruprod/api/api.php";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private List<Marker> markers = new ArrayList<Marker>();
@@ -118,8 +118,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         deviceSingleton.setNickname(savedNickname);
         deviceSingleton.setSecretCode(savedSecretCode);
         deviceSingleton.setMyLocStr(savedLocStr);
-        Log.v(TAG, "Get UUID-> userId: " + (String) userId);
-        Log.v(TAG, "Singleton deviceId: " + (String) deviceSingleton.getDeviceId());
+        Log.d(TAG, "Get UUID-> userId: " + (String) userId);
+        Log.d(TAG, "Singleton deviceId : " + (String) deviceSingleton.getDeviceId() + " NOT BEING USED, use userId instead");
 
 
     }
@@ -127,6 +127,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("SCXTT", " onCreate");
         setContentView(R.layout.activity_show_map);
         MapsInitializer.initialize(this);
         setUpMapIfNeeded();
@@ -178,8 +179,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //                                                               0, 0, is minTime ms, minDistance meters
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // postGetRoomMessages SCXTT TEMP
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // postGetRoomMessages SCXTT TEMP TAKE OUT
 
         AsyncHttpClient client2 = new AsyncHttpClient();
         RequestParams params2 = new RequestParams();
@@ -188,7 +189,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params2.put("location", "41.739567, -86.098872");
         params2.put("secret_code", "harnk");
 
-        client2.post(API_URL, params2, new AsyncHttpResponseHandler() {
+        client2.post(Constants.API_URL, params2, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -252,8 +253,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             }
         });
         Log.v(TAG, "API call response out of catch = " + response);
-        //END POSTGETROOMMESSAGES
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        //END postGetRoomMessages SCXTT TEMP TAKE OUT
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
         ///////////////////////////////////////////
@@ -277,7 +278,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("location", "41.739567, -86.098872");
         params.put("text", "notused");
 
-        client.post(API_URL, params, new AsyncHttpResponseHandler() {
+        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started
@@ -482,6 +483,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         //if NOT singleton.joinedChat, set singleton.imInARoom=false, show LoginActivity
         // Need to store joinedChat on device and check that instead SCXTT WIP
+
         if (!deviceSingleton.isJoinedChat()) {
             deviceSingleton.setImInARoom(false);
             Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
@@ -697,7 +699,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("location", "41.739567, -86.098872");
         params.put("text", "notused");
 
-        client.post(API_URL, params, new AsyncHttpResponseHandler() {
+        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
                 // called before request is started

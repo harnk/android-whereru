@@ -10,12 +10,25 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+
+import cz.msebera.android.httpclient.Header;
+
 /**
  * Created by scottnull on 11/22/15.
  */
 public class LoginActivity extends AppCompatActivity {
 
     EditText nicknameTextField, secretCodeTextField;
+    private static final String TAG = "SCXTT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +56,68 @@ public class LoginActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    public void doStart(View view){
+    private void postJoinRequest(){
+
+        Log.d(TAG, "postJoinRequest");
+        // Throw up a HUD spinner saying "Connecting ..."
+
+        // Do API call cmd = join
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client2 = new AsyncHttpClient();
+        RequestParams params2 = new RequestParams();
+
+        params2.put("cmd", "join");
+        params2.put("user_id", deviceSingleton.getUserId());
+        params2.put("token", deviceSingleton.getGcmToken());
+        params2.put("name", deviceSingleton.getNickname());
+        params2.put("location", deviceSingleton.getMyLocStr());
+        params2.put("code", secretCodeTextField.getText());
+
+        Log.d(TAG, "params2: " + params2);
+
+        client2.post(Constants.API_URL, params2, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                String decoded = null;
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.d(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
+                        ", decoded:" + response);
+                // called when response HTTP status is "200 OK"
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.d(TAG, "API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.d(TAG, "API call response out of catch");
+
+    }
+
+
+    public void doStartPressed(View view){
         nicknameTextField = (EditText)findViewById(R.id.nickName);
         secretCodeTextField = (EditText)findViewById(R.id.mapGroup);
         //if either field is zero length throw up alert
         if (nicknameTextField.length()==0){
             showErrorAlert("Fill in your nickname");
+            return;
         }
         if (secretCodeTextField.length()==0){
             showErrorAlert("Fill in a map group name");
+            return;
         }
 
         //set values to singleton and sharedpreferences
@@ -68,9 +134,10 @@ public class LoginActivity extends AppCompatActivity {
         editor.commit();
 
         String savedMapGroup = prefs.getString("secretCode", "");
-        Log.d("SCXTT", "SAVED prefs secretCode: " + savedMapGroup + " nickname: " + deviceSingleton.getNickname() + " SCXTT WIP check what is saved for savedLocStr");
+        Log.d(TAG, "SAVED prefs secretCode: " + savedMapGroup + " nickname: " + deviceSingleton.getNickname() + " SCXTT WIP check what is saved for savedLocStr");
 
         // do postJoinRequest
+        postJoinRequest();
 
     }
 
