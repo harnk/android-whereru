@@ -127,18 +127,41 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
-//    public void myShowDialog(Activity activity, String title, CharSequence message) {
-    public void myShowDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to exit?")
-                .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
+    private void postLeaveRequest(){
+        Log.d(TAG, "postLeaveRequest");
+        //postLeaveRequest should do API call cmd leave
+        // if success - call userDidLeave
+
+        //userDidLeave saves joinedchat false to SharedPrefs
+        // and singleton setImInARoom to false
+        // then show login - move the 3 next lines to userDidLeave
+//                      Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+//                      startActivity(intent2);
+//                      break;
+
+
+
 //                        MyActivity.this.finish();
+
+
+    }
+
+    private void myShowDialog(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.d(TAG, "pressed OK");
+
+                        //alertview should call postLeaveRequest
+                        postLeaveRequest();
+
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        Log.d(TAG, "pressed Cancel");
                         dialog.cancel();
                     }
                 });
@@ -464,21 +487,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 Log.d(TAG, "Signout/Login selected");
                 //throw alertview are they sure they want to signout
 
-                myShowDialog();
+                myShowDialog("Are you sure you wish to sign out of this map group? Your friends here will miss you!");
 //                myShowDialog("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
 //                showAlert("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
-
-                //alertview should call postLeaveRequest
-
-                //postLeaveRequest should do API call cmd leave
-                // if success - call userDidLeave
-
-                //userDidLeave saves joinedchat false to SharedPrefs
-                // and singleton setImInARoom to false
-                // then show login - move the 3 next lines to userDidLeave
-//                Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
-//                startActivity(intent2);
-//                break;
 
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pinpicker selected");
