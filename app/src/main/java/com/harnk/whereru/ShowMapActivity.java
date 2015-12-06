@@ -127,18 +127,63 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
+    private void userDidLeave() {
+        //userDidLeave saves joinedchat false to SharedPrefs
+        // and singleton setImInARoom to false
+        // then show login - move the 3 next lines to userDidLeave
+        Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+        startActivity(intent2);
+//        break;
+
+    }
+
     private void postLeaveRequest(){
         Log.d(TAG, "postLeaveRequest");
         //postLeaveRequest should do API call cmd leave
         // if success - call userDidLeave
 
-        //userDidLeave saves joinedchat false to SharedPrefs
-        // and singleton setImInARoom to false
-        // then show login - move the 3 next lines to userDidLeave
+        //part1 do API cmd = leave
+        /////////////////////////////////////////////////////////////////////////////////////////
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client2 = new AsyncHttpClient();
+        RequestParams params2 = new RequestParams();
 
-        Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
-        startActivity(intent2);
-//        break;
+        params2.put("cmd", "leave");
+        params2.put("user_id", deviceSingleton.getUserId());
+
+        Log.d(TAG, "params2: " + params2);
+
+        client2.post(Constants.API_URL, params2, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                // called when response HTTP status is "200 OK"
+                String decoded = null;
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.d(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
+                        ", decoded:" + response);
+                userDidLeave();
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.d(TAG, "API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.d(TAG, "API call response out of catch");
+
+        /////////////////////////////////////////////////////////////////////////////////////////
 
 
     }
