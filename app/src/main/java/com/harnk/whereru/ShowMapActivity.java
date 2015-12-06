@@ -135,13 +135,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //userDidLeave saves joinedchat false to SharedPrefs
         // and singleton setImInARoom to false
         // then show login - move the 3 next lines to userDidLeave
-//                      Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
-//                      startActivity(intent2);
-//                      break;
 
-
-
-//                        MyActivity.this.finish();
+        Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+        startActivity(intent2);
+//        break;
 
 
     }
