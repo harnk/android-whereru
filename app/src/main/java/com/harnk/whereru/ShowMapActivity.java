@@ -1,7 +1,10 @@
 package com.harnk.whereru;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -123,6 +126,39 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
     }
+
+//    public void myShowDialog(Activity activity, String title, CharSequence message) {
+    public void myShowDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to exit?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+//                        MyActivity.this.finish();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private void showAlert(String title, String message) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle(title);
+        alertDialog.setMessage(message);
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // do something dummy
+            }
+        });
+        alertDialog.show();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -414,13 +450,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-//        getMenuInflater().inflate(R.layout.actionbar_menu, menu);
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-//        actionBar.setDisplayShowTitleEnabled(true);
-//        actionBar.setTitle("[room]");
-//        actionBar.setHomeButtonEnabled(true);
-//        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -432,10 +461,25 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 startActivity(intent);
                 break;
             case R.id.action_login:
-                Log.d(TAG, "Login selected");
-                Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
-                startActivity(intent2);
-                break;
+                Log.d(TAG, "Signout/Login selected");
+                //throw alertview are they sure they want to signout
+
+                myShowDialog();
+//                myShowDialog("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
+//                showAlert("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
+
+                //alertview should call postLeaveRequest
+
+                //postLeaveRequest should do API call cmd leave
+                // if success - call userDidLeave
+
+                //userDidLeave saves joinedchat false to SharedPrefs
+                // and singleton setImInARoom to false
+                // then show login - move the 3 next lines to userDidLeave
+//                Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+//                startActivity(intent2);
+//                break;
+
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pinpicker selected");
 

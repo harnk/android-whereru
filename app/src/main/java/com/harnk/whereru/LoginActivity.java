@@ -56,6 +56,23 @@ public class LoginActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    private void userDidJoin() {
+        Log.d("SCXTT", "userDidJoin");
+        //set values to singleton and sharedpreferences
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.setImInARoom(true);
+        deviceSingleton.setJoinedChat(true);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("joinedchat", true);
+        editor.commit();
+        //Dismiss the login screen
+        this.finish();
+        //Set a notification to the app that userJoinedRoom which is in iOS but I dont think iOS is even using it
+
+    }
+
     private void postJoinRequest(){
 
         Log.d(TAG, "postJoinRequest");
@@ -82,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                // called when response HTTP status is "200 OK"
                 String decoded = null;
                 try {
                     decoded = new String(response, "UTF-8");
@@ -90,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 Log.d(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
                         ", decoded:" + response);
-                // called when response HTTP status is "200 OK"
+                userDidJoin();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
