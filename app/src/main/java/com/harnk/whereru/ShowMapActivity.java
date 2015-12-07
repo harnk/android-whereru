@@ -78,6 +78,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private ArrayAdapter<String> arrayAdapter;
     private DeviceUuidFactory deviceUuidFactory;
 
+    //Control booleans
+    private boolean isUpdating;
+    private boolean isFromNotification;
+    private boolean pickerIsUp;
+    private boolean okToRecenterMap;
+    private String centerOnThisGuy;
+
+
     //GCM stuff
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "SCXTT";
@@ -130,7 +138,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private void userDidLeave() {
         //userDidLeave saves joinedchat false to SharedPrefs
         // and singleton setImInARoom to false
-        // then show login - move the 3 next lines to userDidLeave
+        // then show login
         Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
         startActivity(intent2);
 //        break;
@@ -158,6 +166,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             public void onStart() {
                 // called before request is started
             }
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 // called when response HTTP status is "200 OK"
@@ -171,11 +180,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         ", decoded:" + response);
                 userDidLeave();
             }
+
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
                 Log.d(TAG, "API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
             }
+
             @Override
             public void onRetry(int retryNo) {
                 // called when request is retried
@@ -229,13 +240,19 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("SCXTT", " onCreate");
+
+        okToRecenterMap = true;
+        pickerIsUp = false;
+        isFromNotification = false;
+        centerOnThisGuy = "";
+
         setContentView(R.layout.activity_show_map);
         MapsInitializer.initialize(this);
         setUpMapIfNeeded();
 
         //Timer setup
         mHandler = new Handler();
-//        startRepeatingTask();
+//        startRepeatingTask(); <--moved to onStart
 
         messageList = (ListView) findViewById(R.id.listView);
 
@@ -280,94 +297,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //                                                               0, 0, is minTime ms, minDistance meters
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // postGetRoomMessages SCXTT TEMP TAKE OUT
-
-        AsyncHttpClient client2 = new AsyncHttpClient();
-        RequestParams params2 = new RequestParams();
-        params2.put("cmd", "getroommessages");
-        params2.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF"); //Ed iPad for testing
-        params2.put("location", "41.739567, -86.098872");
-        params2.put("secret_code", "harnk");
-
-        client2.post(Constants.API_URL, params2, new AsyncHttpResponseHandler() {
-            @Override
-            public void onStart() {
-                // called before request is started
-            }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                //setting the new location AND GETTING THE JSON RESPONSE!
-
-                String decoded = null;  // example for one encoding type
-                try {
-                    decoded = new String(response, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
-                        ", decoded:" + decoded);
-                JSONObject jObj = null;
-                try {
-                    jObj = new JSONObject(decoded);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-                    JSONArray list = new JSONArray(decoded);
-                    Log.d(TAG, "API Call getroommessages returned list.length: " + list.length());
-                    for (int i = 0; i < list.length(); i++) {
-                        JSONObject obj = list.getJSONObject(i);
-
-                        // JSON format is {"message_id":"1051","user_id":"8BF13A775C1844669F678DBB36F6D73D","nickname":"gramma null","message":"Good night all love you guys","location":"39.941742, -85.916614","secret_code":"harnk","time_posted":"2015-09-25 01:11:52"},
-                        String senderName = obj.getString("nickname");
-                        String text = obj.getString("message");
-                        String location = obj.getString("location");
-                        String dateStr = obj.getString("time_posted");
-                        Message message = new Message(senderName, dateStr, text, location);
-//                        Message message = new Message();
-//                        message.setSenderName(senderName);
-//                        message.setText(text);
-                        // Now add the message to the ArrayList
-                        deviceSingleton.addMessage(message);
-
-                        //Need to get these into the adapter
-                        Log.v(TAG, senderName + " - " + dateStr + " - " + location + " ADDED to Singleton ArrayList messages message: " + text);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                // called when response HTTP status is "200 OK"
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.v(TAG, "API call onFailure = " + errorResponse);
-                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-            }
-
-            @Override
-            public void onRetry(int retryNo) {
-                // called when request is retried
-            }
-        });
-        Log.v(TAG, "API call response out of catch = " + response);
-        //END postGetRoomMessages SCXTT TEMP TAKE OUT
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-        ///////////////////////////////////////////
-        // Temporary below - Set to use singleton tempTextArray for now
-        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-        this.arrayAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                deviceSingleton.getTempTextArray() );
-
-        messageList.setAdapter(arrayAdapter);
-        ///////////////////////////////////////////
 
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -512,6 +441,54 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 ////END onCreate //////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public void onStart() {
+        super.onStart();
+        Log.d("SCXTT", " onStart");
+        mGoogleApiClient.connect();
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        //if NOT singleton.joinedChat, set singleton.imInARoom=false, show LoginActivity
+        // Need to store joinedChat on device and check that instead SCXTT WIP
+
+        if (!deviceSingleton.isJoinedChat()) {
+            deviceSingleton.setImInARoom(false);
+            Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
+            startActivity(intent2);
+        } else {
+            deviceSingleton.setImInARoom(true);
+            // do postGetRoomMessages, postGetRoom
+            postGetRoomMessages();
+            postGetRoom();
+            // refresh listview, send local notification to startRepeatingTask (now in onResume)
+        }
+
+    }
+
+    protected void onStop() {
+        super.onStop();
+        Log.d("SCXTT", " onStop");
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setUpMapIfNeeded();
+        startRepeatingTask();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+            new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        stopRepeatingTask();
+        super.onPause();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -556,52 +533,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setUpMapIfNeeded();
-        startRepeatingTask();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
-    }
-
-    @Override
-    protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        stopRepeatingTask();
-        super.onPause();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d("SCXTT", " onStart");
-        mGoogleApiClient.connect();
-        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-        //if NOT singleton.joinedChat, set singleton.imInARoom=false, show LoginActivity
-        // Need to store joinedChat on device and check that instead SCXTT WIP
-
-        if (!deviceSingleton.isJoinedChat()) {
-            deviceSingleton.setImInARoom(false);
-            Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
-            startActivity(intent2);
-        } else {
-            deviceSingleton.setImInARoom(true);
-            // do postGetRoomMessages, postGetRoom
-            // refresh listview, send local notification to startRepeatingTask (now in onResume)
-        }
-
-    }
-
-    protected void onStop() {
-        super.onStop();
-        Log.d("SCXTT", " onStop");
-
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }
-
+    //region Map Stuff
+    //Map Stuff
     /**
      * Check the device to make sure it has the Google Play Services APK. If
      * it doesn't, display a dialog that allows users to download the APK from
@@ -789,11 +722,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     public void postGetRoomWIP() {
         //Do a getroom API call
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         params.put("cmd", "getroom");
-        params.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF");
-        params.put("location", "41.739567, -86.098872");
+        params.put("user_id", deviceSingleton.getUserId());
+        params.put("location", deviceSingleton.getMyLocStr());
         params.put("text", "notused");
 
         client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
@@ -895,21 +829,21 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 break;
                             }
                         }
-//                        Marker m = mMap.addMarker(new MarkerOptions()
-//                                .position(new LatLng(latitude, longitude))
-//                                .icon(BitmapDescriptorFactory.fromResource(resID))
-//                                .title(annotationTitle)
-//                                .snippet(annotationSnippet)
-//                                .anchor(0.4727f, 0.5f));
+                        Marker m = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .icon(BitmapDescriptorFactory.fromResource(resID))
+                                .title(annotationTitle)
+                                .snippet(annotationSnippet)
+                                .anchor(0.4727f, 0.5f));
 
-//                        builder.include(m.getPosition());
+                        builder.include(m.getPosition());
 
                     }
-//                    //Back up camera zoom level to see all pins
-//                    LatLngBounds bounds = builder.build();
-//                    int padding = 20; // offset from edges of the map in pixels
-//                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//                    mMap.moveCamera(cu);
+                    //Back up camera zoom level to see all pins
+                    LatLngBounds bounds = builder.build();
+                    int padding = 20; // offset from edges of the map in pixels
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    mMap.moveCamera(cu);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -933,6 +867,98 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //end getroom code
     }
 
+    private void hookUpMessageListAdapter(){
+        ///////////////////////////////////////////
+        // Temporary below - Set to use singleton tempTextArray for now
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        this.arrayAdapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                deviceSingleton.getTempTextArray() );
+
+        messageList.setAdapter(arrayAdapter);
+        ///////////////////////////////////////////
+    }
+
+    public void postGetRoomMessages(){
+        Log.d(TAG, "postGetRoomMessages");
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client2 = new AsyncHttpClient();
+        RequestParams params2 = new RequestParams();
+        params2.put("cmd", "getroommessages");
+        params2.put("user_id", deviceSingleton.getUserId());
+        params2.put("location", deviceSingleton.getMyLocStr());
+        params2.put("secret_code", deviceSingleton.getSecretCode());
+
+        client2.post(Constants.API_URL, params2, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+
+                String decoded = null;  // example for one encoding type
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
+                        ", decoded:" + decoded);
+                JSONObject jObj = null;
+                try {
+                    jObj = new JSONObject(decoded);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    JSONArray list = new JSONArray(decoded);
+                    Log.d(TAG, "API Call getroommessages returned list.length: " + list.length());
+                    for (int i = 0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+
+                        // JSON format is {"message_id":"1051","user_id":"8BF13A775C1844669F678DBB36F6D73D","nickname":"gramma null","message":"Good night all love you guys","location":"39.941742, -85.916614","secret_code":"harnk","time_posted":"2015-09-25 01:11:52"},
+                        String senderName = obj.getString("nickname");
+                        String text = obj.getString("message");
+                        String location = obj.getString("location");
+                        String dateStr = obj.getString("time_posted");
+                        Message message = new Message(senderName, dateStr, text, location);
+//                        Message message = new Message();
+//                        message.setSenderName(senderName);
+//                        message.setText(text);
+                        // Now add the message to the ArrayList
+                        deviceSingleton.addMessage(message);
+
+                        //Need to get these into the adapter
+                        Log.v(TAG, senderName + " - " + dateStr + " - " + location + " ADDED to Singleton ArrayList messages message: " + text);
+                    }
+                    hookUpMessageListAdapter();
+                    scrollMyListViewToBottom();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // called when response HTTP status is "200 OK"
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.v(TAG, "API call response out of catch = " + response);
+
+    }
 
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -1008,5 +1034,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
     }/* End of Class MyLocationListener */
+    //endregion
 
 }
