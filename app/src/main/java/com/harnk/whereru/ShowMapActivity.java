@@ -843,7 +843,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     LatLngBounds bounds = builder.build();
                     int padding = 20; // offset from edges of the map in pixels
                     CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-                    mMap.moveCamera(cu);
+//                    mMap.moveCamera(cu);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
