@@ -77,6 +77,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private ListView messageList;
     private ArrayAdapter<String> arrayAdapter;
     private DeviceUuidFactory deviceUuidFactory;
+    private ArrayList<Room> roomArray = new ArrayList<Room>();
 
     //Control booleans
     private boolean isUpdating;
@@ -739,25 +740,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 //setting the new location AND GETTING THE JSON RESPONSE!
-
                 String decoded = null;  // example for one encoding type
-
-                try {
-                    decoded = new String(response, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                try { decoded = new String(response, "UTF-8");}
+                catch (UnsupportedEncodingException e) { e.printStackTrace();}
 
                 Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
                         ", decoded:" + decoded);
 
-
-                JSONObject jObj = null;
-                try {
-                    jObj = new JSONObject(decoded);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
                 try {
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
@@ -765,10 +754,40 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     Log.d(TAG, "API Call postGetRoomWIP getroom returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
+
+
+                    //SCXTT WIP
+                    // WE NEED to remove all the junk further below and just set up the room array now
+                    // if no _roomArray then init it else removeallobjects from it
+                    // EXAMPLE:  ArrayList<Room> roomArray = new ArrayList<Room>();
+                    // EXAMPLE:  students.add(new Student());
+                    roomArray.clear();
+
+                    // set a myPinImages array
+
+
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 
+
+
+                        //SCXTT WIP
+                        // WE NEED to remove all the junk further below and just set up the room array now
+                        // set vals (see iOS) for mNickName, mLocation, gmtDateString, myPinImages
                         String nickName = obj.getString("nickname");
+                        String mLocation = obj.getString("location");
+                        String gmtDateString = obj.getString("loc_time");
+                        //String myPinImages = obj.getString("");
+
+
+                        // if !mLocation=0.0,0.0 then new Room roomObj(deviceSingleton.roomName, mNickName, mLocation, gmtDateString, myPinImages
+                        // if !_roomArray the init _roomArray
+                        // _roomArray add object roomObj
+
+                        // if _roomArray length == 0 && centerOnThisGuy.length > 0 then returnToAllWithMessage:@"Eveyone has left the map group"]
+
+
+
                         char ch = nickName.charAt(0);
                         int asciiCode = (int) ch;
                         int digit = asciiCode % 10;
@@ -813,37 +832,42 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         String annotationTitle = obj.getString("nickname");
                         String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
 
-                        for (Marker m : markers) {
-                            if (m.getTitle().equals(annotationTitle)){
-                                //groove the marker baby
-                                m.setPosition(new LatLng(latitude, longitude));
-                                //update the timestamp and distance in the snippet too
-                                //SCXTT WIP test
-//                                m.hideInfoWindow();
-                                //SCXTT debug
-                                if (m.getTitle().equals("5sSimulator")){
-                                    m.setSnippet("WHA " + annotationSnippet);
-                                    m.showInfoWindow();
-                                    Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
-                                }
-                                break;
-                            }
-                        }
-                        Marker m = mMap.addMarker(new MarkerOptions()
+                        // MOVE this to updatePointsOnMapWithAPIData
+                        //AND REPLACE WITH adding Room roomObj to _roomArray
+                        Marker mAdd = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .icon(BitmapDescriptorFactory.fromResource(resID))
                                 .title(annotationTitle)
                                 .snippet(annotationSnippet)
                                 .anchor(0.4727f, 0.5f));
 
-                        builder.include(m.getPosition());
+                        builder.include(mAdd.getPosition());
+
+                        for (Marker m : markers) {
+                            if (m.getTitle().equals(annotationTitle)){
+                                //groove the marker baby
+                                m.setPosition(new LatLng(latitude, longitude));
+                                if (m.getTitle().equals("5sSimulator")){
+                                    m.setSnippet("WHA " + annotationSnippet);
+                                    m.showInfoWindow();
+                                    Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
+                                }
+                                break;
+                            } else {
+
+                            }
+                        }
+                        // END MOVE this to updatePointsOnMapWithAPIData
 
                     }
+
+                    //MOVE this to updatePointsOnMapWithAPIData
                     //Back up camera zoom level to see all pins
                     LatLngBounds bounds = builder.build();
                     int padding = 20; // offset from edges of the map in pixels
                     CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
 //                    mMap.moveCamera(cu);
+                    // END MOVE this to updatePointsOnMapWithAPIData
 
                 } catch (JSONException e) {
                     e.printStackTrace();
