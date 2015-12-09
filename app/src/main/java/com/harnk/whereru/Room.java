@@ -17,7 +17,7 @@ public class Room {
     //Constructor with params
 //    -(id)initWithRoomName:(NSString *)rName andMemberNickName:(NSString *)mNickName andMemberLocation:(NSString *)mLocation
 //    andMemberLocTime:(NSString *)mLocTime andMemberPinImage:(NSString *)mPinImageString;
-    public Room(String roomName, String memberNickName, String memberLocation, String memberUpdateTime, String memberPinImage){
+    public Room(String roomName, String memberNickName, String memberLocation, String memberUpdateTime){
         this.roomName = roomName;
         this.memberNickName = memberNickName;
         this.memberLocation = memberLocation;
@@ -31,4 +31,23 @@ public class Room {
 
     }
 
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public String getMemberNickName() {
+        return memberNickName;
+    }
+
+    public String getMemberLocation() {
+        return memberLocation;
+    }
+
+    public String getMemberUpdateTime() {
+        return memberUpdateTime;
+    }
+
+    public String getMemberPinImage() {
+        return memberPinImage;
+    }
 }
