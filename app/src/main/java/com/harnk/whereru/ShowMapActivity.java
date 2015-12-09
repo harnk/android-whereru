@@ -1020,10 +1020,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //    }
 
     public void updatePointsOnMapWithAPIData() {
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         // seed the region values with my current location and to set the span later to include all the Markers
         // loop thru all roomArray objects
         // pull from roomArray where 'who' matches memberNikName
-        
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomArray.size() == 0) {
             pinPickerButtonEnabled = false;
             mMap.clear();
@@ -1033,79 +1035,76 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         // Loop thru all Room items in roomArray
-//        for (int i = 0; i < list.length(); i++) {
-//            JSONObject obj = list.getJSONObject(i);
-
             for(int i = 0; i < roomArray.size(); i++){
                 Log.v(TAG, "found roomObj in roomArray start grooving it");
                 Room thisRoomObj = roomArray.get(i);
                 Log.d(TAG, "grooving memberNickName:" + thisRoomObj.getMemberNickName() + " memberLocation:" + thisRoomObj.getMemberLocation() + " memberUpdateTime:" + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
-//            int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
+                int resID = getResources().getIdentifier(thisRoomObj.getMemberPinImage(), "drawable", getPackageName());
 //
-//                        String[] latlong =  obj.getString("location").split(",");
-//                        double latitude = Double.parseDouble(latlong[0]);
-//                        double longitude = Double.parseDouble(latlong[1]);
+                String[] latlong =  thisRoomObj.getMemberLocation().split(",");
+                double latitude = Double.parseDouble(latlong[0]);
+                double longitude = Double.parseDouble(latlong[1]);
 //
-//                        //Get distance from me to LatLng for the title
-//                        Location oldLoc = deviceSingleton.getMyNewLocation();
+                //Get distance from me to LatLng for the title
+                Location oldLoc = deviceSingleton.getMyNewLocation();
 //
-//                        Location pinLoc = new Location("dummyprovider");
-//                        pinLoc.setLatitude(latitude);
-//                        pinLoc.setLongitude(longitude);
+                Location pinLoc = new Location("dummyprovider");
+                pinLoc.setLatitude(latitude);
+                pinLoc.setLongitude(longitude);
+
+                float distanceBetween;
+                float distanceInYards;
+                float distanceInMiles;
+
+                if (oldLoc == null ) {
+                    distanceBetween = 0;
+                    distanceInYards = 0;
+                    distanceInMiles = 0;
+
+                } else {
+                    distanceBetween = oldLoc.distanceTo(pinLoc);
+                    distanceInYards = (float) (distanceBetween * 1.09361);
+                    distanceInMiles = distanceInYards / 1760;
+                }
 //
-//                        float distanceBetween;
-//                        float distanceInYards;
-//                        float distanceInMiles;
-//
-//                        if (oldLoc == null ) {
-//                            distanceBetween = 0;
-//                            distanceInYards = 0;
-//                            distanceInMiles = 0;
-//
-//                        } else {
-//                            distanceBetween = oldLoc.distanceTo(pinLoc);
-//                            distanceInYards = (float) (distanceBetween * 1.09361);
-//                            distanceInMiles = distanceInYards / 1760;
-//                        }
-//
-//                        String pinDisplayDistance;
-//
-//                        if (distanceInYards > 500) {
-//                            String myMiles = String.format("%.1f", distanceInMiles);
-//                            pinDisplayDistance = myMiles + " miles";
-//                        } else {
-//                            String myYards = String.format("%.1f", distanceInYards);
-//                            pinDisplayDistance = myYards + " y";
-//                        }
-//
-//                        String annotationTitle = obj.getString("nickname");
-//                        String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
-//
+                Log.d(TAG, "distanceBetween:" + distanceBetween + " distanceInYards: " + distanceInYards + " distanceInMiles:" + distanceInMiles);
+                String pinDisplayDistance;
+                if (distanceInYards > 500) {
+                    String myMiles = String.format("%.1f", distanceInMiles);
+                    pinDisplayDistance = myMiles + " miles";
+                } else {
+                    String myYards = String.format("%.1f", distanceInYards);
+                    pinDisplayDistance = myYards + " y";
+                }
+
+                String annotationTitle = thisRoomObj.getMemberNickName();
+                String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", "+ pinDisplayDistance;
+
 //                        // MOVE this to updatePointsOnMapWithAPIData
 //                        //AND REPLACE WITH adding Room roomObj to _roomArray
-//                        Marker mAdd = mMap.addMarker(new MarkerOptions()
-//                                .position(new LatLng(latitude, longitude))
-//                                .icon(BitmapDescriptorFactory.fromResource(resID))
-//                                .title(annotationTitle)
-//                                .snippet(annotationSnippet)
-//                                .anchor(0.4727f, 0.5f));
-//
-//                        builder.include(mAdd.getPosition());
-//
-//                        for (Marker m : markers) {
-//                            if (m.getTitle().equals(annotationTitle)){
-//                                //groove the marker baby
-//                                m.setPosition(new LatLng(latitude, longitude));
-//                                if (m.getTitle().equals("5sSimulator")){
-//                                    m.setSnippet("WHA " + annotationSnippet);
-//                                    m.showInfoWindow();
-//                                    Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
-//                                }
-//                                break;
-//                            } else {
-//
-//                            }
-//                        }
+                Marker mAdd = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(latitude, longitude))
+                        .icon(BitmapDescriptorFactory.fromResource(resID))
+                        .title(annotationTitle)
+                        .snippet(annotationSnippet)
+                        .anchor(0.4727f, 0.5f));
+
+                builder.include(mAdd.getPosition());
+
+                for (Marker m : markers) {
+                    if (m.getTitle().equals(annotationTitle)){
+                        //groove the marker baby
+                        m.setPosition(new LatLng(latitude, longitude));
+                        if (m.getTitle().equals("5sSimulator")){
+                            m.setSnippet("WHA " + annotationSnippet);
+                            m.showInfoWindow();
+                            Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
+                        }
+                        break;
+                    } else {
+
+                    }
+                }
 //                        // END MOVE this to updatePointsOnMapWithAPIData
         }
 
