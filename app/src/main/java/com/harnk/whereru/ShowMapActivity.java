@@ -1067,14 +1067,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     distanceInMiles = distanceInYards / 1760;
                 }
 //
-                Log.d(TAG, "distanceBetween:" + distanceBetween + " distanceInYards: " + distanceInYards + " distanceInMiles:" + distanceInMiles);
+                Log.v(TAG, "distanceBetween:" + distanceBetween + " distanceInYards: " + distanceInYards + " distanceInMiles:" + distanceInMiles);
                 String pinDisplayDistance;
                 if (distanceInYards > 500) {
                     String myMiles = String.format("%.1f", distanceInMiles);
                     pinDisplayDistance = myMiles + " miles";
+                    Log.d(TAG, "myMiles:" + pinDisplayDistance);
                 } else {
                     String myYards = String.format("%.1f", distanceInYards);
                     pinDisplayDistance = myYards + " y";
+                    Log.d(TAG, "myYards:" + pinDisplayDistance);
                 }
 
                 String annotationTitle = thisRoomObj.getMemberNickName();
@@ -1109,12 +1111,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         //Back up camera zoom level to see all pins
-//            LatLngBounds bounds = builder.build();
-//            int padding = 20; // offset from edges of the map in pixels
-//            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//                    mMap.moveCamera(cu);
-
-
+        LatLngBounds bounds = builder.build();
+        int padding = 20; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.moveCamera(cu);
 
     }
 
