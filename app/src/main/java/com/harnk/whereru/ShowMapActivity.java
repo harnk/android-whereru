@@ -19,6 +19,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -925,7 +926,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     String gmtDateStr = thisRoomObj.getMemberUpdateTime(); //UTC needs to be converted to currentLocale
 //                    NSString* dateString = [self localDateStrFromUTCDateStr:gmtDateStr];
 //                    NSDate* date = [self dateFromUTCDateStr:gmtDateStr];
-                    Log.d(TAG, "markers.size() = " + markers.size());
+                    Log.v(TAG, "markers.size() = " + markers.size());
                     for (int m = 0; m < markers.size(); m++) {
                         Marker ann = markers.get(m);
                         //First see if this ann still has a _roomArray match
@@ -935,8 +936,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                               [self returnToAllWithMessage:@""];
                                 //implement
                             }
-                            Toast.makeText(this, ann.getTitle() + "has left the map group", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, ann.getTitle() + " has left the map group", Toast.LENGTH_SHORT).show();
+//                            markers.get(m).remove();
                             ann.remove();
+                            markers.remove(m);
                         }
                         // implement
 //                        southWest.latitude = MIN(southWest.latitude, ann.coordinate.latitude);
@@ -969,11 +972,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 float distanceInMiles = distanceInYards / 1760;
 
                                 if (distanceInYards > 500) {
-                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInMiles));
+                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInMiles) + " mi");
                                 } else {
-                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInYards));
+                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInYards) + " y");
                                 }
-
+//                                ann.hideInfoWindow();
+//                                ann.showInfoWindow();
 //                              ann.loctime = date; // this prob isnt working either
                                 ann.setPosition(new LatLng(latitude, longitude));
                             } // 0.000, 0.000
@@ -984,7 +988,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         Log.v(TAG, "Adding new who with pin " + who + "" + imageString);
 
                         if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
-                            Toast.makeText(this, who + "is in the map group", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
 
                             String annotationTitle = thisRoomObj.getMemberNickName();
 //                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + pinDisplayDistance;
@@ -996,7 +1000,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                     .snippet(annotationSnippet)
                                     .anchor(0.4727f, 0.5f));
                             markers.add(annNew);
-                            Log.d(TAG, "FORREALZ added one to markers now markers.size() = " + markers.size());
+                            Log.v(TAG, "FORREALZ added one to markers now markers.size() = " + markers.size());
                             builder.include(annNew.getPosition());
                         } // 0.000, 0.000
                     } // !whofound
