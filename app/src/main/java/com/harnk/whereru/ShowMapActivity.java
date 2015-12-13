@@ -299,148 +299,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //                                                               0, 0, is minTime ms, minDistance meters
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
-
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        //Do a getroom API call
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params = new RequestParams();
-        params.put("cmd", "getroom");
-        params.put("user_id", "381CA86D2E3A4F18B2E6A63CF0C52EDF");
-        params.put("location", "41.739567, -86.098872");
-        params.put("text", "notused");
-
-        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
-            @Override
-            public void onStart() {
-                // called before request is started
-            }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                //setting the new location AND GETTING THE JSON RESPONSE!
-
-                String decoded = null;  // example for one encoding type
-
-                try {
-                    decoded = new String(response, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
-                        ", decoded:" + decoded);
-
-
-                JSONObject jObj = null;
-                try {
-                    jObj = new JSONObject(decoded);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-                    String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
-                    JSONArray list = new JSONArray(decoded);
-                    Log.v(TAG, "API Call getroom returned list.length: " + list.length());
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                    for (int i=0; i < list.length(); i++) {
-                        JSONObject obj = list.getJSONObject(i);
-
-                        String nickName = obj.getString("nickname");
-                        char ch = nickName.charAt(0);
-                        int asciiCode = (int) ch;
-                        int digit = asciiCode % 10;
-                        int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
-
-
-//                        Log.v(TAG, "nickname: " + obj.getString("nickname") + " char: " + ch + " asciiCode: " + asciiCode + " digit: " + digit);
-//                        Log.v(TAG, "location: " + obj.getString("location"));
-//                        Log.v(TAG, "loc_time: " + obj.getString("loc_time"));
-
-                        String[] latlong =  obj.getString("location").split(",");
-                        double latitude = Double.parseDouble(latlong[0]);
-                        double longitude = Double.parseDouble(latlong[1]);
-
-                        //Get distance from me to LatLng for the title
-                        Location oldLoc = deviceSingleton.getMyNewLocation();
-
-                        Location pinLoc = new Location("dummyprovider");
-                        pinLoc.setLatitude(latitude);
-                        pinLoc.setLongitude(longitude);
-
-                        float distanceBetween;
-                        float distanceInYards;
-                        float distanceInMiles;
-
-                        if (oldLoc == null ) {
-                            distanceBetween = 0;
-                            distanceInYards = 0;
-                            distanceInMiles = 0;
-
-                        } else {
-                            distanceBetween = oldLoc.distanceTo(pinLoc);
-                            distanceInYards = (float) (distanceBetween * 1.09361);
-                            distanceInMiles = distanceInYards / 1760;
-                        }
-
-                        String pinDisplayDistance;
-
-
-                        if (distanceInYards > 500) {
-//                            String  = [NSString stringWithFormat:@"%@ %@, %.1f miles", senderName, dateString, distanceInMiles];
-                            String myMiles = String.format("%.1f", distanceInMiles);
-                            pinDisplayDistance = myMiles + " miles";
-                        } else {
-//                            _label.text = [NSString stringWithFormat:@"%@ %@, %.1f y", senderName, dateString, distanceInYards];
-                            String myYards = String.format("%.1f", distanceInYards);
-                            pinDisplayDistance = myYards + " y";
-                        }
-
-                        String annotationTitle = obj.getString("nickname");
-                        String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
-                        Marker m = mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latitude, longitude))
-                                .icon(BitmapDescriptorFactory.fromResource(resID))
-                                .title(annotationTitle)
-                                .snippet(annotationSnippet)
-                                .anchor(0.4727f, 0.5f));
-                        markers.add(m);
-
-                        builder.include(m.getPosition());
-
-                    }
-                    //Back up camera zoom level to see all pins
-                    //this should prob come out of here and go into the main UI thread and use saved objects
-                    LatLngBounds bounds = builder.build();
-                    int padding = 20; // offset from edges of the map in pixels
-                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-                    mMap.moveCamera(cu);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                // called when response HTTP status is "200 OK"
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.v(TAG, "API call onFailure = " + errorResponse);
-                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-            }
-
-            @Override
-            public void onRetry(int retryNo) {
-                // called when request is retried
-            }
-        });
-        Log.v(TAG, "API call response out of catch = " + response);
-
-        //END getroom API call
-        ///////////////////////////////////
-
-    }
-////END onCreate //////////////////////////////////////////////////////////////////////////////////
+    } ////END onCreate //////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void onStart() {
@@ -1066,7 +925,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     String gmtDateStr = thisRoomObj.getMemberUpdateTime(); //UTC needs to be converted to currentLocale
 //                    NSString* dateString = [self localDateStrFromUTCDateStr:gmtDateStr];
 //                    NSDate* date = [self dateFromUTCDateStr:gmtDateStr];
-
+                    Log.d(TAG, "markers.size() = " + markers.size());
                     for (int m = 0; m < markers.size(); m++) {
                         Marker ann = markers.get(m);
                         //First see if this ann still has a _roomArray match
@@ -1088,7 +947,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
                             //SCXTT RELEASE
-                            Log.v(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
+                            Log.d(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
                             whoFound = true;
                             location.setLatitude(Double.parseDouble(strings[0]));
                             location.setLongitude(Double.parseDouble(strings[1]));
@@ -1136,7 +995,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                     .title(annotationTitle)
                                     .snippet(annotationSnippet)
                                     .anchor(0.4727f, 0.5f));
-
+                            markers.add(annNew);
+                            Log.d(TAG, "FORREALZ added one to markers now markers.size() = " + markers.size());
                             builder.include(annNew.getPosition());
                         } // 0.000, 0.000
                     } // !whofound
