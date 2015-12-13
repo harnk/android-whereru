@@ -1019,8 +1019,25 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //
 //    }
 
+    public boolean annTitleHasLeftRoom(String nickName) {
+        if (nickName.equals("Current Location")) {
+            return false;
+        }
+        for(int i = 0; i < roomArray.size(); i++){
+            Room thisRoomObj = roomArray.get(i);
+            if (nickName.equals(thisRoomObj.getMemberNickName())){
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void updatePointsOnMapWithAPIData() {
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        Location location = new Location("dummyprovider");
+        Location southWest, northEast;
+//        MKCoordinateRegion region;
+
         // seed the region values with my current location and to set the span later to include all the Markers
         // loop thru all roomArray objects
         // pull from roomArray where 'who' matches memberNikName
@@ -1035,86 +1052,134 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         // Loop thru all Room items in roomArray
-            for(int i = 0; i < roomArray.size(); i++){
-                Log.v(TAG, "found roomObj in roomArray start grooving it");
+            for(int i = 0; i < roomArray.size(); i++) {
+                boolean whoFound = false;
                 Room thisRoomObj = roomArray.get(i);
-                Log.d(TAG, "grooving memberNickName:" + thisRoomObj.getMemberNickName() + " memberLocation:" + thisRoomObj.getMemberLocation() + " memberUpdateTime:" + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
-                int resID = getResources().getIdentifier(thisRoomObj.getMemberPinImage(), "drawable", getPackageName());
-//
-                String[] latlong =  thisRoomObj.getMemberLocation().split(",");
-                double latitude = Double.parseDouble(latlong[0]);
-                double longitude = Double.parseDouble(latlong[1]);
-//
-                //Get distance from me to LatLng for the title
-                Location oldLoc = deviceSingleton.getMyNewLocation();
-//
-                Location pinLoc = new Location("dummyprovider");
-                pinLoc.setLatitude(latitude);
-                pinLoc.setLongitude(longitude);
+                if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
+                    String[] strings = thisRoomObj.getMemberLocation().split(",");
+                    double latitude = Double.parseDouble(strings[0]);
+                    double longitude = Double.parseDouble(strings[1]);
+                    String who = thisRoomObj.getMemberNickName();
+                    String imageString = thisRoomObj.getMemberPinImage();
+                    int useThisPin = getResources().getIdentifier(thisRoomObj.getMemberPinImage(), "drawable", getPackageName());
 
-                float distanceBetween;
-                float distanceInYards;
-                float distanceInMiles;
+                    String gmtDateStr = thisRoomObj.getMemberUpdateTime(); //UTC needs to be converted to currentLocale
+//                    NSString* dateString = [self localDateStrFromUTCDateStr:gmtDateStr];
+//                    NSDate* date = [self dateFromUTCDateStr:gmtDateStr];
 
-                if (oldLoc == null ) {
-                    distanceBetween = 0;
-                    distanceInYards = 0;
-                    distanceInMiles = 0;
-
-                } else {
-                    distanceBetween = oldLoc.distanceTo(pinLoc);
-                    distanceInYards = (float) (distanceBetween * 1.09361);
-                    distanceInMiles = distanceInYards / 1760;
-                }
-//
-                Log.v(TAG, "distanceBetween:" + distanceBetween + " distanceInYards: " + distanceInYards + " distanceInMiles:" + distanceInMiles);
-                String pinDisplayDistance;
-                if (distanceInYards > 500) {
-                    String myMiles = String.format("%.1f", distanceInMiles);
-                    pinDisplayDistance = myMiles + " miles";
-                    Log.d(TAG, "myMiles:" + pinDisplayDistance);
-                } else {
-                    String myYards = String.format("%.1f", distanceInYards);
-                    pinDisplayDistance = myYards + " y";
-                    Log.d(TAG, "myYards:" + pinDisplayDistance);
-                }
-
-                String annotationTitle = thisRoomObj.getMemberNickName();
-                String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", "+ pinDisplayDistance;
-
-//                        // MOVE this to updatePointsOnMapWithAPIData
-//                        //AND REPLACE WITH adding Room roomObj to _roomArray
-                Marker mAdd = mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(latitude, longitude))
-                        .icon(BitmapDescriptorFactory.fromResource(resID))
-                        .title(annotationTitle)
-                        .snippet(annotationSnippet)
-                        .anchor(0.4727f, 0.5f));
-
-                builder.include(mAdd.getPosition());
-
-                for (Marker m : markers) {
-                    if (m.getTitle().equals(annotationTitle)){
-                        //groove the marker baby
-                        m.setPosition(new LatLng(latitude, longitude));
-                        if (m.getTitle().equals("5sSimulator")){
-                            m.setSnippet("WHA " + annotationSnippet);
-                            m.showInfoWindow();
-                            Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
+                    for (int m = 0; m < markers.size(); m++) {
+                        Marker ann = markers.get(m);
+                        //First see if this ann still has a _roomArray match
+                        //or if the person has left the room kill this ann
+                        if (annTitleHasLeftRoom(ann.getTitle())) {
+                            if (ann.getTitle().equals(centerOnThisGuy)) {
+//                               [self returnToAllWithMessage:@""];
+                                //implement
+                            }
+                            Toast.makeText(this, ann.getTitle() + "has left the map group", Toast.LENGTH_SHORT).show();
+                            ann.remove();
                         }
-                        break;
-                    } else {
+                        // implement
+//                        southWest.latitude = MIN(southWest.latitude, ann.coordinate.latitude);
+//                        southWest.longitude = MIN(southWest.longitude, ann.coordinate.longitude);
+//                        northEast.latitude = MAX(northEast.latitude, ann.coordinate.latitude);
+//                        northEast.longitude = MAX(northEast.longitude, ann.coordinate.longitude);
 
-                    }
-                }
-//                        // END MOVE this to updatePointsOnMapWithAPIData
+                        // Move the updated pin to its new locations
+                        if (ann.getTitle().equals(who)) {
+                            //SCXTT RELEASE
+                            Log.v(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
+                            whoFound = true;
+                            location.setLatitude(Double.parseDouble(strings[0]));
+                            location.setLongitude(Double.parseDouble(strings[1]));
+                            if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
+                                //Format the location to read distance from me now
+
+                                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                //get location of me
+                                Location locA = deviceSingleton.getMyNewLocation();
+
+                                // Handle the location of the remote devices from the saved messages
+//                                String[] strings =  thisRoomObj.getMemberLocation().split(",");
+                                Location locB = new Location("dummyprovider");
+                                locB.setLatitude(latitude);
+                                locB.setLongitude(longitude);
+
+                                float distanceFromMeInMeters = locA.distanceTo(locB);
+                                float distanceInYards = (float) (distanceFromMeInMeters * 1.09361);
+                                float distanceInMiles = distanceInYards / 1760;
+
+                                if (distanceInYards > 500) {
+                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInMiles));
+                                } else {
+                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInYards));
+                                }
+
+//                              ann.loctime = date; // this prob isnt working either
+                                ann.setPosition(new LatLng(latitude, longitude));
+                            } // 0.000, 0.000
+                        } // ann title = who
+                    } // for marker in markers
+                    // new who so add addAnnotation and set coordinate and location time and recenter the map
+                    if (!whoFound) {
+                        Log.v(TAG, "Adding new who with pin " + who + "" + imageString);
+
+                        if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
+                            Toast.makeText(this, who + "is in the map group", Toast.LENGTH_SHORT).show();
+
+                            String annotationTitle = thisRoomObj.getMemberNickName();
+//                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + pinDisplayDistance;
+                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + "XXX.X y";
+                            Marker annNew = mMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(latitude, longitude))
+                                    .icon(BitmapDescriptorFactory.fromResource(useThisPin))
+                                    .title(annotationTitle)
+                                    .snippet(annotationSnippet)
+                                    .anchor(0.4727f, 0.5f));
+
+                            builder.include(annNew.getPosition());
+                        } // 0.000, 0.000
+                    } // !whofound
+                } // 0.000, 0.000
+            } // end for (Room *item in _roomArray)
+            // Recenter map
+        if (okToRecenterMap) {
+            Log.d(TAG, "CONVERT this logic below to recenter the map");
+//            if (([self getThisGuysRow:_centerOnThisGuy] >= 0)) {
+//                CLLocationCoordinate2D location;
+//                MKCoordinateRegion region;
+//
+//                NSArray *strings = [[[_roomArray objectAtIndex:[self getThisGuysRow:_centerOnThisGuy]] memberLocation] componentsSeparatedByString:@","];
+//                location.latitude = [strings[0] doubleValue];
+//                location.longitude = [strings[1] doubleValue];
+//
+//                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
+//                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
+//
+//                // This is a diag distance (if you wanted tighter you could do NE-NW or NE-SE)
+//                //    CLLocationDistance meters = [_mapViewSouthWest distanceFromLocation:_mapViewNorthEast];
+//                CLLocationDistance meters = 1000;
+//
+//                [self reCenterMap:region meters:meters];
+//            } else {
+//                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:southWest.latitude longitude:southWest.longitude];
+//                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
+//
+//                // This is a diag distance (if you wanted tighter you could do NE-NW or NE-SE)
+//                CLLocationDistance meters = [_mapViewSouthWest distanceFromLocation:_mapViewNorthEast];
+//
+//
+//                [self reCenterMap:region meters:meters];
+//
+//            }
         }
 
+
         //Back up camera zoom level to see all pins
-        LatLngBounds bounds = builder.build();
-        int padding = 20; // offset from edges of the map in pixels
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-        mMap.moveCamera(cu);
+//        LatLngBounds bounds = builder.build();
+//        int padding = 20; // offset from edges of the map in pixels
+//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+//        mMap.moveCamera(cu);
 
     }
 
