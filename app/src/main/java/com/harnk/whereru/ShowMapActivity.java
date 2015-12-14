@@ -27,8 +27,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -238,6 +241,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         alertDialog.show();
     }
 
+    private void returnToAllWithMessage(String toastMsg) {
+        centerOnThisGuy = "";
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -373,7 +380,17 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                showAlert("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
 
             case R.id.action_pinpicker:
-                Log.d(TAG, "Pinpicker selected");
+                Log.d(TAG, "Pin picker selected");
+                // Array of choices
+//                String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey"};
+//                Spinner spinner = new Spinner(this);
+//                ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors); //selected item will look like a spinner set from XML
+//                spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//                spinner.setAdapter(spinnerArrayAdapter);
+//                RelativeLayout layout = new RelativeLayout(this);
+//                layout.setVerticalGravity(0);
+//                layout.addView(spinner);
+//                setContentView(layout);
 
                 break;
             case R.id.action_reload:

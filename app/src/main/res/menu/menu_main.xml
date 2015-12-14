@@ -7,7 +7,22 @@
         android:orderInCategory="101"
         android:title="pin"
         android:icon="@drawable/pinmenuitem"
-        app:showAsAction="always"/>
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/chels"
+                android:title="chels" />
+            <item
+                android:id="@+id/Dad4s"
+                android:title="Dad4s" />
+            <item
+                android:id="@+id/Steve"
+                android:title="Steve" />
+            <item
+                android:id="@+id/jackiee"
+                android:title="jackiee" />
+        </menu>
+        </item>
     <item android:id="@+id/action_compose"
         android:orderInCategory="102"
         android:title="Compose"
