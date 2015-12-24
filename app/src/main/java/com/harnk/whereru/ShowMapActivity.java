@@ -381,6 +381,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pin picker selected");
+                centerOnThisGuy = "fakeperson";
                 // Array of choices
 //                String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey"};
 //                Spinner spinner = new Spinner(this);
@@ -896,6 +897,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //
 //    }
 
+    private int getThisGuysRow(String thisGuy){
+        for(int i = 0; i < roomArray.size(); i++) {
+            Room thisRoomObj = roomArray.get(i);
+            if (thisGuy.equals(thisRoomObj.getMemberNickName())) {
+                return i;
+            }
+        }
+            return -1;
+    }
+
     public boolean annTitleHasLeftRoom(String nickName) {
         if (nickName.equals("Current Location")) {
             return false;
@@ -967,7 +978,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
                             //SCXTT RELEASE
-                            Log.d(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
+                            Log.v(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
                             whoFound = true;
                             location.setLatitude(Double.parseDouble(strings[0]));
                             location.setLongitude(Double.parseDouble(strings[1]));
@@ -1023,17 +1034,26 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     } // !whofound
                 } // 0.000, 0.000
             } // end for (Room *item in _roomArray)
-            // Recenter map
+        // Recenter map
         if (okToRecenterMap) {
             Log.d(TAG, "CONVERT this logic below to recenter the map");
 //            if (([self getThisGuysRow:_centerOnThisGuy] >= 0)) {
+            if (getThisGuysRow(centerOnThisGuy) >= 0) {
+                Log.d("SCXTT", "we found a guy to center on");
+                Room thisRoomObj = roomArray.get(getThisGuysRow(centerOnThisGuy));
+                Log.d(TAG, "CENTER ON " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
+
 //                CLLocationCoordinate2D location;
 //                MKCoordinateRegion region;
-//
+
 //                NSArray *strings = [[[_roomArray objectAtIndex:[self getThisGuysRow:_centerOnThisGuy]] memberLocation] componentsSeparatedByString:@","];
 //                location.latitude = [strings[0] doubleValue];
 //                location.longitude = [strings[1] doubleValue];
-//
+                String[] strings = thisRoomObj.getMemberLocation().split(",");
+                double latitude = Double.parseDouble(strings[0]);
+                double longitude = Double.parseDouble(strings[1]);
+                Log.d("SCXTT", "center on latitude: " + latitude + " logitude: " + longitude);
+
 //                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
 //                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
 //
@@ -1042,7 +1062,17 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                CLLocationDistance meters = 1000;
 //
 //                [self reCenterMap:region meters:meters];
-//            } else {
+
+//        LatLngBounds bounds = builder.build();
+//        int padding = 20; // offset from edges of the map in pixels
+//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+//        mMap.moveCamera(cu);
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
+
+            } else {
+                Log.d("SCXTT", "NO guy to center on");
+
 //                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:southWest.latitude longitude:southWest.longitude];
 //                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
 //
@@ -1052,7 +1082,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //
 //                [self reCenterMap:region meters:meters];
 //
-//            }
+            } //end getThisGuysRow
         }
 
 
