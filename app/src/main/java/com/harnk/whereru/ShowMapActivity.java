@@ -965,6 +965,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 //implement
                             }
                             Toast.makeText(this, ann.getTitle() + " has left the map group", Toast.LENGTH_SHORT).show();
+                            centerOnThisGuy = "";
 //                            markers.get(m).remove();
                             ann.remove();
                             markers.remove(m);
