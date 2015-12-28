@@ -333,6 +333,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             startActivity(intent2);
         } else {
             deviceSingleton.setImInARoom(true);
+            setTitle("[" + deviceSingleton.getSecretCode() + "]");
             // do postGetRoomMessages, postGetRoom
             postGetRoomMessages();
             postGetRoom();
@@ -932,10 +933,17 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public void updatePointsOnMapWithAPIData() {
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         Location location = new Location("dummyprovider");
-        Location southWest, northEast;
-//        MKCoordinateRegion region;
 
         // seed the region values with my current location and to set the span later to include all the Markers
+        Location southWest = new Location("dummyprovider");
+        Location northEast = new Location("dummyprovider");
+        String mLoc = deviceSingleton.getMyLocStr();
+        String[] strs = mLoc.split(",");
+        southWest.setLatitude(Double.parseDouble(strs[0]));
+        southWest.setLongitude(Double.parseDouble(strs[1]));
+        northEast = southWest;
+//        MKCoordinateRegion region;
+
         // loop thru all roomArray objects
         // pull from roomArray where 'who' matches memberNikName
 
@@ -980,22 +988,19 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                             markers.remove(m);
                         }
                         // implement
-//                        southWest.latitude = MIN(southWest.latitude, ann.coordinate.latitude);
-//                        southWest.longitude = MIN(southWest.longitude, ann.coordinate.longitude);
-//                        northEast.latitude = MAX(northEast.latitude, ann.coordinate.latitude);
-//                        northEast.longitude = MAX(northEast.longitude, ann.coordinate.longitude);
+                        southWest.setLatitude(Math.min(southWest.getLatitude(), ann.getPosition().latitude));
+                        southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
+                        northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
+                        northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
 
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
-                            //SCXTT RELEASE
                             Log.v(TAG, "grooving " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
                             whoFound = true;
                             location.setLatitude(Double.parseDouble(strings[0]));
                             location.setLongitude(Double.parseDouble(strings[1]));
                             if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
                                 //Format the location to read distance from me now
-
-                                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 //get location of me
                                 Location locA = deviceSingleton.getMyNewLocation();
 
@@ -1064,24 +1069,23 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 double longitude = Double.parseDouble(strings[1]);
                 Log.d("SCXTT", "center on latitude: " + latitude + " logitude: " + longitude);
 
-//                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
-//                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:location.latitude longitude:location.longitude];
-//
-//                // This is a diag distance (if you wanted tighter you could do NE-NW or NE-SE)
-//                //    CLLocationDistance meters = [_mapViewSouthWest distanceFromLocation:_mapViewNorthEast];
-//                CLLocationDistance meters = 1000;
-//
-//                [self reCenterMap:region meters:meters];
-
-//        LatLngBounds bounds = builder.build();
-//        int padding = 20; // offset from edges of the map in pixels
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//        mMap.moveCamera(cu);
-
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
 
             } else {
                 Log.d("SCXTT", "NO guy to center on");
+                LatLngBounds.Builder allBuilder = new LatLngBounds.Builder();
+//                for (Marker marker : markers) {
+//                    builder.include(marker.getPosition());
+//                }
+                //Convert Location to LatLng
+                LatLng swLatLng = new LatLng(southWest.getLatitude(), southWest.getLongitude());
+                allBuilder.include(swLatLng);
+                LatLng neLatLng = new LatLng(northEast.getLatitude(), northEast.getLongitude());
+                allBuilder.include(neLatLng);
+                LatLngBounds region = allBuilder.build();
+                int padding = 0; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(region, padding);
+                mMap.animateCamera(cu);
 
 //                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:southWest.latitude longitude:southWest.longitude];
 //                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
