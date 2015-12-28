@@ -136,7 +136,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         deviceSingleton.setSecretCode(savedSecretCode);
         deviceSingleton.setMyLocStr(savedLocStr);
         Log.d(TAG, "Get UUID-> userId: " + (String) userId);
-        Log.d(TAG, "Singleton deviceId : " + (String) deviceSingleton.getDeviceId() + " NOT BEING USED, use userId instead");
+//        Log.d(TAG, "Singleton deviceId : " + (String) deviceSingleton.getDeviceId() + " NOT BEING USED, use userId instead");
 
 
     }
@@ -145,6 +145,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //userDidLeave saves joinedchat false to SharedPrefs
         // and singleton setImInARoom to false
         // then show login
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.setImInARoom(false);
+        deviceSingleton.setJoinedChat(false);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("savedJoinedChat", false);
+        editor.commit();
         Intent intent2 = new Intent(ShowMapActivity.this, LoginActivity.class);
         startActivity(intent2);
 //        break;
@@ -189,7 +197,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.d(TAG, "API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
+                Log.d(TAG, "postLeaveRequest API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
             }
 
@@ -250,6 +258,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("SCXTT", " onCreate");
+        MapsInitializer.initialize(getApplicationContext());
 
         okToRecenterMap = true;
         pickerIsUp = false;
@@ -257,7 +266,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         centerOnThisGuy = "";
 
         setContentView(R.layout.activity_show_map);
-        MapsInitializer.initialize(this);
+//        MapsInitializer.initialize(this);
         setUpMapIfNeeded();
 
         //Timer setup
@@ -452,12 +461,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
      * method in {@link #onResume()} to guarantee that it will be called.
      */
     private void setUpMapIfNeeded() {
-        BitmapDescriptor bluePin;
-        bluePin = BitmapDescriptorFactory.fromResource(R.drawable.blue);
-        BitmapDescriptor goldPin;
-        goldPin = BitmapDescriptorFactory.fromResource(R.drawable.gold);
-        BitmapDescriptor pinkPin;
-        pinkPin = BitmapDescriptorFactory.fromResource(R.drawable.pink);
+//        BitmapDescriptor bluePin;
+//        bluePin = BitmapDescriptorFactory.fromResource(R.drawable.blue);
+//        BitmapDescriptor goldPin;
+//        goldPin = BitmapDescriptorFactory.fromResource(R.drawable.gold);
+//        BitmapDescriptor pinkPin;
+//        pinkPin = BitmapDescriptorFactory.fromResource(R.drawable.pink);
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
@@ -756,7 +765,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.v(TAG, "API call onFailure = " + errorResponse);
+                Log.v(TAG, "postGetRoomWIP API call onFailure = " + errorResponse);
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
             }
 
@@ -851,7 +860,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.v(TAG, "API call onFailure = " + errorResponse);
+                Log.v(TAG, "postGetRoomMessages API call onFailure = " + errorResponse);
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
             }
 

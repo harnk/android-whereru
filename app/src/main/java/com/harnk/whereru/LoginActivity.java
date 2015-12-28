@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("joinedchat", true);
+        editor.putBoolean("savedJoinedChat", true);
         editor.commit();
         //Dismiss the login screen
         this.finish();
@@ -80,6 +80,14 @@ public class LoginActivity extends AppCompatActivity {
 
         // Do API call cmd = join
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        String deviceLocation = deviceSingleton.getMyLocStr();
+        if (deviceLocation.length() == 0) {
+            deviceLocation = "40.689124, -74.044611"; //statue of liberty
+        }
+        String deviceToken = deviceSingleton.getGcmToken();
+        if (deviceToken.length() == 0) {
+            deviceToken = "7e59c0d7852e87e594a075d7a81c90b13c076637851f36c6bb32dd1e4e62a639"; // fake apple token
+        }
         AsyncHttpClient client2 = new AsyncHttpClient();
         RequestParams params2 = new RequestParams();
 
@@ -87,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
         params2.put("user_id", deviceSingleton.getUserId());
         params2.put("token", deviceSingleton.getGcmToken());
         params2.put("name", deviceSingleton.getNickname());
-        params2.put("location", deviceSingleton.getMyLocStr());
+        params2.put("location", deviceLocation);
         params2.put("code", secretCodeTextField.getText());
 
         Log.d(TAG, "params2: " + params2);
@@ -112,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                Log.d(TAG, "API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
+                Log.d(TAG, "postJoinRequest API call onFailure = " + errorResponse.toString() + " e: " + e.toString() + " statusCode: " + statusCode);
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
             }
             @Override

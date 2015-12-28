@@ -1,7 +1,9 @@
 package com.harnk.whereru;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
+import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -33,9 +35,14 @@ public class DeviceSingleton {
         if(appContext == null){
             appContext = context;
         }
-        //SCXTT WIP need to see this next boolean from saved device setting
-        joinedChat = false;
-        deviceId = this.findDeviceID();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        this.setJoinedChat(prefs.getBoolean("savedJoinedChat", false));
+        this.setImInARoom(prefs.getBoolean("savedImInARoom", false));
+        this.setUserId(prefs.getString("savedUserId", ""));
+        this.setSecretCode(prefs.getString("savedSecretCode", ""));
+        this.setNickname(prefs.getString("savedNickname", ""));
+//        joinedChat = false;
+//        deviceId = this.findDeviceID();
 //        myCurrentLoc = this.getMyCurrentLoc;
     }
 
@@ -84,20 +91,27 @@ public class DeviceSingleton {
     }
 
     // not used
-    public String getDeviceId() {
-        return deviceId;
-    }
-    // not used
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
+//    public String getDeviceId() {
+//        return deviceId;
+//    }
+//    // not used
+//    public void setDeviceId(String deviceId) {
+//        this.deviceId = deviceId;
+//    }
 
     public String getUserId() {
         return userId;
     }
 
     public void setUserId(String userId) {
+
         this.userId = userId;
+        // save to prefs
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("savedUserId", userId);
+        editor.commit();
+
     }
 
     public String getGcmToken() {
@@ -118,11 +132,25 @@ public class DeviceSingleton {
 
     public String getNickname() { return nickname; }
 
-    public void setNickname(String myNickname) {this.nickname = myNickname; }
+    public void setNickname(String myNickname) {
+        this.nickname = myNickname;
+        // save to prefs
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("savedNickname", myNickname);
+        editor.commit();
+    }
 
     public String getSecretCode() { return secretCode; }
 
-    public void setSecretCode(String mySecretCode) {this.secretCode = mySecretCode; }
+    public void setSecretCode(String mySecretCode) {
+        this.secretCode = mySecretCode;
+        // save to prefs
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("savedSecretCode", mySecretCode);
+        editor.commit();
+    }
 
     public Location getMyNewLocation() {
         return myNewLocation;
@@ -142,7 +170,15 @@ public class DeviceSingleton {
 
     public boolean isImInARoom() {return imInARoom;}
 
-    public void setImInARoom(boolean imInARoom) {this.imInARoom = imInARoom;}
+    public void setImInARoom(boolean imInARoom) {
+        this.imInARoom = imInARoom;
+        // save to prefs
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("savedImInARoom", imInARoom);
+        editor.commit();
+
+    }
 
     public boolean isMapIsActive() {
         return mapIsActive;
@@ -154,6 +190,12 @@ public class DeviceSingleton {
 
     public boolean isJoinedChat() { return joinedChat; }
 
-    public void setJoinedChat(boolean joinedChat) { this.joinedChat = joinedChat; }
+    public void setJoinedChat(boolean joinedChat) {
+        this.joinedChat = joinedChat;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("savedJoinedChat", joinedChat);
+        editor.commit();
+    }
 
 }
