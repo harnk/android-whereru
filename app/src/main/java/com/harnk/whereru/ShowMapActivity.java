@@ -394,6 +394,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pin picker selected");
                 centerOnThisGuy = "chels";
+                okToRecenterMap = true;
                 // Array of choices
 //                String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey"};
 //                Spinner spinner = new Spinner(this);
@@ -472,8 +473,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             customMapFragment.setOnDragListener(new MapWrapperLayout.OnDragListener() {
                 @Override
                 public void onDrag(MotionEvent motionEvent) {
-                    Log.d("SCXTT", String.format("DRAGGGING ME: %s", motionEvent));
+                    Log.v("SCXTT", String.format("DRAGGGING ME: %s", motionEvent));
                     // Handle motion event:
+                    int action = motionEvent.getAction();
+                    if (1 == action){
+                        Log.v("SCXTT", "drag ended - action: " + action);
+                        okToRecenterMap = false;
+                    }
                 }
             });
             mMap = customMapFragment.getMap();
@@ -997,7 +1003,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                        southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
 //                        northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
 //                        northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
-                        Log.d("SCXTT", "sw: " + southWestLat + ", " + southWestLon + " ne: " + northEastLat + ", " + northEastLon);
+                        Log.v("SCXTT", "sw: " + southWestLat + ", " + southWestLon + " ne: " + northEastLat + ", " + northEastLon);
 
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
