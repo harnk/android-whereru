@@ -992,6 +992,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
                         northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
                         northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
+                        Log.d("SCXTT", "southWest,northEast:" + southWest.toString() + ", " + northEast.toString());
 
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
