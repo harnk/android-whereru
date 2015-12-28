@@ -26,6 +26,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -47,6 +48,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -391,7 +393,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pin picker selected");
-                centerOnThisGuy = "fakeperson";
+                centerOnThisGuy = "chels";
                 // Array of choices
 //                String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey"};
 //                Spinner spinner = new Spinner(this);
@@ -462,27 +464,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
      * method in {@link #onResume()} to guarantee that it will be called.
      */
     private void setUpMapIfNeeded() {
-//        BitmapDescriptor bluePin;
-//        bluePin = BitmapDescriptorFactory.fromResource(R.drawable.blue);
-//        BitmapDescriptor goldPin;
-//        goldPin = BitmapDescriptorFactory.fromResource(R.drawable.gold);
-//        BitmapDescriptor pinkPin;
-//        pinkPin = BitmapDescriptorFactory.fromResource(R.drawable.pink);
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
-//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.739362, -86.099086), 16.0f));
 
+            // Google map init block
+            CustomMapFragment customMapFragment = ((CustomMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+            customMapFragment.setOnDragListener(new MapWrapperLayout.OnDragListener() {
+                @Override
+                public void onDrag(MotionEvent motionEvent) {
+                    Log.d("SCXTT", String.format("DRAGGGING ME: %s", motionEvent));
+                    // Handle motion event:
+                }
+            });
+            mMap = customMapFragment.getMap();
 
-//            centerMapOnMyLoc();
-
-            // Check if we were successful in obtaining the map.
-//            mMap.addMarker(new MarkerOptions()
-//                    .position(new LatLng(41.738362, -86.097086))
-//                    .icon(pinkPin)
-//                    .title("Fake - Today, 8:43 PM, 6.3 y"));
             if (mMap != null) {
                 setUpMap();
             }
@@ -937,11 +932,17 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         // seed the region values with my current location and to set the span later to include all the Markers
         Location southWest = new Location("dummyprovider");
         Location northEast = new Location("dummyprovider");
+        double southWestLat, southWestLon, northEastLat, northEastLon;
         String mLoc = deviceSingleton.getMyLocStr();
         String[] strs = mLoc.split(",");
         southWest.setLatitude(Double.parseDouble(strs[0]));
         southWest.setLongitude(Double.parseDouble(strs[1]));
         northEast = southWest;
+
+        southWestLat = southWest.getLatitude();
+        southWestLon = southWest.getLongitude();
+        northEastLat = northEast.getLatitude();
+        northEastLon = northEast.getLongitude();
 //        MKCoordinateRegion region;
 
         // loop thru all roomArray objects
@@ -988,11 +989,15 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                             markers.remove(m);
                         }
                         // implement
-                        southWest.setLatitude(Math.min(southWest.getLatitude(), ann.getPosition().latitude));
-                        southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
-                        northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
-                        northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
-                        Log.d("SCXTT", "southWest,northEast:" + southWest.toString() + ", " + northEast.toString());
+                        southWestLat = (Math.min(southWestLat, ann.getPosition().latitude));
+                        southWestLon = (Math.min(southWestLon, ann.getPosition().longitude));
+                        northEastLat = (Math.max(northEastLat, ann.getPosition().latitude));
+                        northEastLon = (Math.max(northEastLon, ann.getPosition().longitude));
+//                        southWest.setLatitude(Math.min(southWest.getLatitude(), ann.getPosition().latitude));
+//                        southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
+//                        northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
+//                        northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
+                        Log.d("SCXTT", "sw: " + southWestLat + ", " + southWestLon + " ne: " + northEastLat + ", " + northEastLon);
 
                         // Move the updated pin to its new locations
                         if (ann.getTitle().equals(who)) {
@@ -1059,12 +1064,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 Room thisRoomObj = roomArray.get(getThisGuysRow(centerOnThisGuy));
                 Log.d(TAG, "CENTER ON " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
 
-//                CLLocationCoordinate2D location;
-//                MKCoordinateRegion region;
-
-//                NSArray *strings = [[[_roomArray objectAtIndex:[self getThisGuysRow:_centerOnThisGuy]] memberLocation] componentsSeparatedByString:@","];
-//                location.latitude = [strings[0] doubleValue];
-//                location.longitude = [strings[1] doubleValue];
                 String[] strings = thisRoomObj.getMemberLocation().split(",");
                 double latitude = Double.parseDouble(strings[0]);
                 double longitude = Double.parseDouble(strings[1]);
@@ -1075,28 +1074,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             } else {
                 Log.d("SCXTT", "NO guy to center on");
                 LatLngBounds.Builder allBuilder = new LatLngBounds.Builder();
-//                for (Marker marker : markers) {
-//                    builder.include(marker.getPosition());
-//                }
                 //Convert Location to LatLng
-                LatLng swLatLng = new LatLng(southWest.getLatitude(), southWest.getLongitude());
+                LatLng swLatLng = new LatLng(southWestLat, southWestLon);
                 allBuilder.include(swLatLng);
-                LatLng neLatLng = new LatLng(northEast.getLatitude(), northEast.getLongitude());
+                LatLng neLatLng = new LatLng(northEastLat, northEastLon);
                 allBuilder.include(neLatLng);
                 LatLngBounds region = allBuilder.build();
-                int padding = 0; // offset from edges of the map in pixels
+                int padding = 10; // offset from edges of the map in pixels
                 CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(region, padding);
                 mMap.animateCamera(cu);
-
-//                _mapViewSouthWest = [[CLLocation alloc] initWithLatitude:southWest.latitude longitude:southWest.longitude];
-//                _mapViewNorthEast = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
-//
-//                // This is a diag distance (if you wanted tighter you could do NE-NW or NE-SE)
-//                CLLocationDistance meters = [_mapViewSouthWest distanceFromLocation:_mapViewNorthEast];
-//
-//
 //                [self reCenterMap:region meters:meters];
-//
             } //end getThisGuysRow
         }
 

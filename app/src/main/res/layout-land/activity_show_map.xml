@@ -22,7 +22,7 @@
         android:layout_toRightOf="@+id/listView"
         android:id="@+id/map"
         tools:context=".ShowMapActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
+        android:name="com.harnk.whereru.CustomMapFragment" />
 
 
 </RelativeLayout>

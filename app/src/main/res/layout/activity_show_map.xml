@@ -14,7 +14,7 @@
         android:layout_above="@+id/listView"
         android:id="@+id/map"
         tools:context=".ShowMapActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
+        android:name="com.harnk.whereru.CustomMapFragment" />
 
     <ListView
         android:layout_width="wrap_content"
