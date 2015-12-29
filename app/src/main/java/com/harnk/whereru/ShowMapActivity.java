@@ -90,6 +90,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private DeviceUuidFactory deviceUuidFactory;
     private ArrayList<Room> roomArray = new ArrayList<Room>();
     private ArrayList<String> tempPinArray = new ArrayList<String>(); // temporary pin list
+    private Toast toast;
 
     //Control booleans
     private boolean isUpdating;
@@ -395,6 +396,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position));
                 centerOnThisGuy = tempPinArray.get(position);
                 okToRecenterMap = true;
+                Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+
                 //scxtty
             }
 
@@ -994,6 +997,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         tempPinArray.clear();
+        tempPinArray.add("[" + roomArray.get(0).getRoomName() + "]");
         // Loop thru all Room items in roomArray
             for(int i = 0; i < roomArray.size(); i++) {
                 tempPinArray.add(roomArray.get(i).getMemberNickName());
@@ -1075,7 +1079,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         Log.v(TAG, "Adding new who with pin " + who + "" + imageString);
 
                         if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
-                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
+                            if (toast != null){
+                                toast.cancel();
+                                toast = Toast.makeText(this, "", Toast.LENGTH_LONG);
+                                toast.setText("Multiple people are in the map group");
+                            } else {
+                                toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+                                toast.setText(who + " is in the map group");
+                            }
+                            toast.show();
+//                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
 
                             String annotationTitle = thisRoomObj.getMemberNickName();
 //                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + pinDisplayDistance;
@@ -1139,7 +1152,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             } else {
                 Log.v(TAG, "oldLoc: " + deviceSingleton.getMyNewLocation() + " loc: " + loc);
                 Location oldLoc = deviceSingleton.getMyNewLocation();
-                Log.d(TAG, "WIP this next line is throwing exception errors every so often - FIX IT");
+                Log.v(TAG, "WIP this next line is throwing exception errors every so often - FIX IT");
                 float distanceMoved = oldLoc.distanceTo(loc);
                 Log.v(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
                 centerMapOnMyLoc();

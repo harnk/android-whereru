@@ -3,9 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ShowMapActivity">
-    <item android:id="@+id/spinner"
-        app:showAsAction="ifRoom"
-        app:actionViewClass="android.widget.Spinner" />
     <item android:id="@+id/action_pinpicker"
         android:orderInCategory="101"
         android:title="pin"
@@ -25,22 +22,27 @@
                 android:id="@+id/jackiee"
                 android:title="jackiee" />
         </menu>
-        </item>
-    <item android:id="@+id/action_compose"
+    </item>
+    <item android:id="@+id/spinner"
+        android:title="pin"
         android:orderInCategory="102"
+        app:showAsAction="ifRoom"
+        app:actionViewClass="android.widget.Spinner" />
+    <item android:id="@+id/action_compose"
+        android:orderInCategory="103"
         android:title="Compose"
         android:icon="@drawable/compose_24"
         app:showAsAction="always"/>
     <item android:id="@+id/action_reload"
-        android:orderInCategory="103"
+        android:orderInCategory="104"
         android:title="Refresh"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_sat"
-        android:orderInCategory="104"
+        android:orderInCategory="105"
         android:title="Sat/Map"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_login"
-        android:orderInCategory="105"
+        android:orderInCategory="106"
         android:title="Sign Out"
         app:showAsAction="ifRoom"/>
 </menu>
