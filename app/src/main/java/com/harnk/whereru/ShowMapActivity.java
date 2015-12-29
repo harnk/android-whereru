@@ -20,6 +20,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.TypedArrayUtils;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -27,6 +28,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -74,7 +77,7 @@ import java.util.UUID;
 import cz.msebera.android.httpclient.Header;
 
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
 //    public static final String API_URL = "http://www.altcoinfolio.com//whereruprod/api/api.php";
 
@@ -82,8 +85,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private List<Marker> markers = new ArrayList<Marker>();
     private ListView messageList;
     private ArrayAdapter<String> arrayAdapter;
+    private ArrayAdapter<String> pinArrayAdapter;
+    private Spinner spinner;
     private DeviceUuidFactory deviceUuidFactory;
     private ArrayList<Room> roomArray = new ArrayList<Room>();
+    private ArrayList<String> tempPinArray = new ArrayList<String>(); // temporary pin list
 
     //Control booleans
     private boolean isUpdating;
@@ -359,7 +365,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         setUpMapIfNeeded();
         startRepeatingTask();
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-            new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
+                new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
     }
 
     @Override
@@ -372,6 +378,32 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem item = menu.findItem(R.id.spinner);
+        spinner = (Spinner) MenuItemCompat.getActionView(item);
+
+        for(int i = 0; i < roomArray.size(); i++) {
+            tempPinArray.add(roomArray.get(i).getMemberNickName());
+
+        }
+        pinArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tempPinArray);
+//      Specify the layout to use when the list of choices appears
+        pinArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(pinArrayAdapter); // set the adapter to provide layout of rows and content
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position));
+                centerOnThisGuy = tempPinArray.get(position);
+                okToRecenterMap = true;
+                //scxtty
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("SCXTT", "WE LOST THE DANG THING");
+            }
+        });
+
         return true;
     }
 
@@ -393,19 +425,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             case R.id.action_pinpicker:
                 Log.d(TAG, "Pin picker selected");
-                centerOnThisGuy = "chels";
-                okToRecenterMap = true;
-                // Array of choices
-//                String colors[] = {"Red","Blue","White","Yellow","Black", "Green","Purple","Orange","Grey"};
-//                Spinner spinner = new Spinner(this);
-//                ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors); //selected item will look like a spinner set from XML
-//                spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//                spinner.setAdapter(spinnerArrayAdapter);
-//                RelativeLayout layout = new RelativeLayout(this);
-//                layout.setVerticalGravity(0);
-//                layout.addView(spinner);
-//                setContentView(layout);
-
+//                centerOnThisGuy = "chels";
+//                okToRecenterMap = true;
                 break;
             case R.id.action_reload:
                 Log.d(TAG, "Reload selected");
@@ -782,6 +803,15 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         //end getroom code
     }
 
+    private void hookUpPinListAdapter(){
+        this.pinArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, tempPinArray);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tempPinArray);
+//      Specify the layout to use when the list of choices appears
+        pinArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//      spinner.setAdapter(pinArrayAdapter); // set the adapter to provide layout of rows and content
+
+    }
+
     private void hookUpMessageListAdapter(){
         ///////////////////////////////////////////
         // Temporary below - Set to use singleton tempTextArray for now
@@ -963,8 +993,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             pinPickerButtonEnabled = true;
         }
 
+        tempPinArray.clear();
         // Loop thru all Room items in roomArray
             for(int i = 0; i < roomArray.size(); i++) {
+                tempPinArray.add(roomArray.get(i).getMemberNickName());
                 boolean whoFound = false;
                 Room thisRoomObj = roomArray.get(i);
                 if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
@@ -1061,10 +1093,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     } // !whofound
                 } // 0.000, 0.000
             } // end for (Room *item in _roomArray)
+        pinArrayAdapter.notifyDataSetChanged();
         // Recenter map
         if (okToRecenterMap) {
-            Log.d(TAG, "CONVERT this logic below to recenter the map");
-//            if (([self getThisGuysRow:_centerOnThisGuy] >= 0)) {
             if (getThisGuysRow(centerOnThisGuy) >= 0) {
                 Log.d("SCXTT", "we found a guy to center on");
                 Room thisRoomObj = roomArray.get(getThisGuysRow(centerOnThisGuy));
@@ -1092,14 +1123,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                [self reCenterMap:region meters:meters];
             } //end getThisGuysRow
         }
-
-
-        //Back up camera zoom level to see all pins
-//        LatLngBounds bounds = builder.build();
-//        int padding = 20; // offset from edges of the map in pixels
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//        mMap.moveCamera(cu);
-
     }
 
     /* Class My Location Listener *************************************************************************************/
@@ -1146,6 +1169,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
     }/* End of Class MyLocationListener */
-    //endregion
+
 
 }
