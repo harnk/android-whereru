@@ -49,21 +49,6 @@ public class DeviceSingleton {
     private DeviceSingleton(){
     }
 
-    //I am not using deviceId, I am instead using userId for the user's unique GUID
-    private String findDeviceID() {
-        final TelephonyManager tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
-
-        final String tmDevice, tmSerial, androidId;
-        tmDevice = "" + tm.getDeviceId();
-        tmSerial = "" + tm.getSimSerialNumber();
-        androidId = "" + android.provider.Settings.Secure.getString(appContext.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-
-        UUID deviceUuid = new UUID(androidId.hashCode(), ((long)tmDevice.hashCode() << 32) | tmSerial.hashCode());
-        String deviceId = deviceUuid.toString();
-
-        return deviceId;
-    }
-
     public static DeviceSingleton getInstance(){
         if(mInstance == null)
         {
@@ -89,15 +74,6 @@ public class DeviceSingleton {
     public ArrayList<String> getTempTextArray() {
         return tempTextArray;
     }
-
-    // not used
-//    public String getDeviceId() {
-//        return deviceId;
-//    }
-//    // not used
-//    public void setDeviceId(String deviceId) {
-//        this.deviceId = deviceId;
-//    }
 
     public String getUserId() {
         return userId;
