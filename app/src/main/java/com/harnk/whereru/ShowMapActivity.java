@@ -342,7 +342,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             startActivity(intent2);
         } else {
             deviceSingleton.setImInARoom(true);
-            setTitle("[" + deviceSingleton.getSecretCode() + "]");
+            setTitle(deviceSingleton.getSecretCode());
+            setTitleColor(3);
             // do postGetRoomMessages, postGetRoom
             postGetRoomMessages();
             postGetRoom();
@@ -394,9 +395,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position));
+                DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                 centerOnThisGuy = tempPinArray.get(position);
                 okToRecenterMap = true;
-                Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                if (centerOnThisGuy.equals("[" + deviceSingleton.getSecretCode() + "]")) {
+                    Toast.makeText(view.getContext(), "Returning to view of entire map group " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                }
 
                 //scxtty
             }
@@ -426,11 +432,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                myShowDialog("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
 //                showAlert("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
 
-            case R.id.action_pinpicker:
-                Log.d(TAG, "Pin picker selected");
-//                centerOnThisGuy = "chels";
-//                okToRecenterMap = true;
-                break;
+//            case R.id.action_pinpicker:
+//                Log.d(TAG, "Pin picker selected");
+////                centerOnThisGuy = "chels";
+////                okToRecenterMap = true;
+//                break;
+
             case R.id.action_reload:
                 Log.d(TAG, "Reload selected");
 //                Temporary below

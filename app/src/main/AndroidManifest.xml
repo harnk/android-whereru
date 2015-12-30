@@ -39,6 +39,7 @@
 
         <activity
             android:name=".ShowMapActivity"
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/title_activity_show_map" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,12 +50,14 @@
         <activity
             android:name=".ComposeActivity"
             android:label="Compose"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait" >
         </activity>
 
         <activity
             android:name=".LoginActivity"
             android:label="Join Group"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait" >
         </activity>
 

@@ -3,36 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ShowMapActivity">
-    <item android:id="@+id/action_pinpicker"
-        android:orderInCategory="101"
-        android:title="pin"
-        android:icon="@drawable/pinmenuitem"
-        app:showAsAction="always">
-        <menu>
-            <item
-                android:id="@+id/chels"
-                android:title="chels" />
-            <item
-                android:id="@+id/Dad4s"
-                android:title="Dad4s" />
-            <item
-                android:id="@+id/Steve"
-                android:title="Steve" />
-            <item
-                android:id="@+id/jackiee"
-                android:title="jackiee" />
-        </menu>
-    </item>
+
     <item android:id="@+id/spinner"
         android:title="pin"
-        android:orderInCategory="102"
-        app:showAsAction="ifRoom"
+        android:orderInCategory="101"
+        app:showAsAction="always"
         app:actionViewClass="android.widget.Spinner" />
+
+    <!--<item android:id="@+id/action_pinpicker"-->
+        <!--android:orderInCategory="102"-->
+        <!--android:title="pin"-->
+        <!--android:icon="@drawable/pinmenuitem"-->
+        <!--app:showAsAction="always">-->
+        <!--<menu>-->
+            <!--<item-->
+                <!--android:id="@+id/chels"-->
+                <!--android:title="chels" />-->
+            <!--<item-->
+                <!--android:id="@+id/Dad4s"-->
+                <!--android:title="Dad4s" />-->
+            <!--<item-->
+                <!--android:id="@+id/Steve"-->
+                <!--android:title="Steve" />-->
+            <!--<item-->
+                <!--android:id="@+id/jackiee"-->
+                <!--android:title="jackiee" />-->
+        <!--</menu>-->
+    <!--</item>-->
     <item android:id="@+id/action_compose"
         android:orderInCategory="103"
         android:title="Compose"
         android:icon="@drawable/compose_24"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_reload"
         android:orderInCategory="104"
         android:title="Refresh"
