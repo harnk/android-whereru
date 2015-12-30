@@ -1088,12 +1088,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         if (!thisRoomObj.getMemberLocation().equals("0.000000, 0.000000")) {
                             if (toast != null){
                                 toast.cancel();
-                                toast = Toast.makeText(this, "", Toast.LENGTH_LONG);
-                                toast.setText("Multiple people are in the map group");
-                            } else {
-                                toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
-                                toast.setText(who + " is in the map group");
                             }
+                            toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+                            toast.setText(who + " is in the map group");
                             toast.show();
 //                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
 

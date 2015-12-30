@@ -50,7 +50,7 @@
         <activity
             android:name=".ComposeActivity"
             android:label="Compose"
-            android:windowSoftInputMode="adjustPan"
+            android:windowSoftInputMode="stateVisible"
             android:screenOrientation="portrait" >
         </activity>
 
