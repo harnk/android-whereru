@@ -1004,7 +1004,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         tempPinArray.clear();
-        tempPinArray.add("[" + roomArray.get(0).getRoomName() + "]");
+        if (roomArray.size() > 0) {
+            tempPinArray.add("[" + roomArray.get(0).getRoomName() + "]");
+        }
         // Loop thru all Room items in roomArray
             for(int i = 0; i < roomArray.size(); i++) {
                 tempPinArray.add(roomArray.get(i).getMemberNickName());
