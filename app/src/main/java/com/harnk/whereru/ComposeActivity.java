@@ -52,7 +52,8 @@ public class ComposeActivity extends AppCompatActivity{
         // put up a hud spinner
         // get text entered
         EditText sendText = (EditText) findViewById(R.id.editText);
-        Log.d(TAG, "send text: " + sendText.getText());
+        String sendString = sendText.getText().toString();
+        Log.d(TAG, "sendString: " + sendString);
 
         // do API call with cmd:message user_id: location: text:
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
@@ -70,7 +71,7 @@ public class ComposeActivity extends AppCompatActivity{
         params.put("cmd", "message");
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceLocation);
-        params.put("text", sendText.getText());
+        params.put("text", sendString);
 
         Log.d(TAG, "params: " + params);
 
