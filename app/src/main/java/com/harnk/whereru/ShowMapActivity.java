@@ -673,126 +673,22 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
                 try {
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-                    String[] myPinImages = new String[]{"blue","cyan","darkgreen","gold","green","orange","pink","purple","red","yellow","cyangray"};
                     JSONArray list = new JSONArray(decoded);
                     Log.d(TAG, "API Call postGetRoomWIP getroom returned list.length: " + list.length());
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-
-
-                    //SCXTT WIP
-                    // WE NEED to remove all the junk further below and just set up the room array now
-                    // if no _roomArray then init it else removeallobjects from it
-                    // EXAMPLE:  ArrayList<Room> roomArray = new ArrayList<Room>();
-                    // EXAMPLE:  students.add(new Student());
                     roomArray.clear();
-
-                    // set a myPinImages array
-
 
                     for (int i=0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
-
-
-
-                        //SCXTT WIP
-                        // WE NEED to remove all the junk further below and just set up the room array now
-                        // set vals (see iOS) for mNickName, mLocation, gmtDateString, myPinImages
                         String nickName = obj.getString("nickname");
                         String mLocation = obj.getString("location");
                         String gmtDateString = obj.getString("loc_time");
                         // add the guys above to Room roomObj
                         Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
-
-                        // if !mLocation=0.0,0.0 then new Room roomObj(deviceSingleton.roomName, mNickName, mLocation, gmtDateString
-                        // _roomArray add object roomObj
                         roomArray.add(roomObj);
-
-                        // if _roomArray length == 0 && centerOnThisGuy.length > 0 then returnToAllWithMessage:@"Eveyone has left the map group"]
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                        int resID = getResources().getIdentifier(myPinImages[digit], "drawable", getPackageName());
-//
-//                        String[] latlong =  obj.getString("location").split(",");
-//                        double latitude = Double.parseDouble(latlong[0]);
-//                        double longitude = Double.parseDouble(latlong[1]);
-//
-//                        //Get distance from me to LatLng for the title
-//                        Location oldLoc = deviceSingleton.getMyNewLocation();
-//
-//                        Location pinLoc = new Location("dummyprovider");
-//                        pinLoc.setLatitude(latitude);
-//                        pinLoc.setLongitude(longitude);
-//
-//                        float distanceBetween;
-//                        float distanceInYards;
-//                        float distanceInMiles;
-//
-//                        if (oldLoc == null ) {
-//                            distanceBetween = 0;
-//                            distanceInYards = 0;
-//                            distanceInMiles = 0;
-//
-//                        } else {
-//                            distanceBetween = oldLoc.distanceTo(pinLoc);
-//                            distanceInYards = (float) (distanceBetween * 1.09361);
-//                            distanceInMiles = distanceInYards / 1760;
-//                        }
-//
-//                        String pinDisplayDistance;
-//
-//                        if (distanceInYards > 500) {
-//                            String myMiles = String.format("%.1f", distanceInMiles);
-//                            pinDisplayDistance = myMiles + " miles";
-//                        } else {
-//                            String myYards = String.format("%.1f", distanceInYards);
-//                            pinDisplayDistance = myYards + " y";
-//                        }
-//
-//                        String annotationTitle = obj.getString("nickname");
-//                        String annotationSnippet = obj.getString("loc_time") + ", "+ pinDisplayDistance;
-//
-//                        // MOVE this to updatePointsOnMapWithAPIData
-//                        //AND REPLACE WITH adding Room roomObj to _roomArray
-//                        Marker mAdd = mMap.addMarker(new MarkerOptions()
-//                                .position(new LatLng(latitude, longitude))
-//                                .icon(BitmapDescriptorFactory.fromResource(resID))
-//                                .title(annotationTitle)
-//                                .snippet(annotationSnippet)
-//                                .anchor(0.4727f, 0.5f));
-//
-//                        builder.include(mAdd.getPosition());
-//
-//                        for (Marker m : markers) {
-//                            if (m.getTitle().equals(annotationTitle)){
-//                                //groove the marker baby
-//                                m.setPosition(new LatLng(latitude, longitude));
-//                                if (m.getTitle().equals("5sSimulator")){
-//                                    m.setSnippet("WHA " + annotationSnippet);
-//                                    m.showInfoWindow();
-//                                    Log.d(TAG, "WIP-> FOUND 5sSim and the snippet is " + annotationSnippet);
-//                                }
-//                                break;
-//                            } else {
-//
-//                            }
-//                        }
-//                        // END MOVE this to updatePointsOnMapWithAPIData
-
                     }
                     Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
                     updatePointsOnMapWithAPIData();
-
-
-//                    //MOVE this to updatePointsOnMapWithAPIData
-//                    //Back up camera zoom level to see all pins
-//                    LatLngBounds bounds = builder.build();
-//                    int padding = 20; // offset from edges of the map in pixels
-//                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-////                    mMap.moveCamera(cu);
-                    // END MOVE this to updatePointsOnMapWithAPIData
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -812,8 +708,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         });
         Log.v(TAG, "API call response out of catch = " + response);
 
-        //END getroom API call
-        //end getroom code
     }
 
     private void hookUpPinListAdapter(){
