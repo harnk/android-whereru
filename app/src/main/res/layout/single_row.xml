@@ -30,6 +30,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="hey how are you out there in message land"
         android:layout_below="@+id/senderNameDateDistanceTextView"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="20dp"/>
 
 </RelativeLayout>

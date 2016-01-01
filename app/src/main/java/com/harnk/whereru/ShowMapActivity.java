@@ -728,6 +728,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 android.R.layout.simple_list_item_1,
                 deviceSingleton.getTempTextArray() );
 
+        //ADD MessageAdapter here to replace above stuff
+
         messageList.setAdapter(arrayAdapter);
         ///////////////////////////////////////////
     }
