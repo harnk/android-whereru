@@ -48,9 +48,7 @@ public class ComposeActivity extends AppCompatActivity{
     }
 
     private void saveAction() {
-        // resign the keyboard
         // put up a hud spinner
-        // get text entered
         EditText sendText = (EditText) findViewById(R.id.editText);
         String sendString = sendText.getText().toString();
         Log.d(TAG, "sendString: " + sendString);

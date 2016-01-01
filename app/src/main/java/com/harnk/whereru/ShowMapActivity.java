@@ -113,8 +113,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public GoogleApiClient mGoogleApiClient;
 
     //Interval timers
-    private int mInterval = 5000; // 5 seconds by default, can be changed later
-    private Handler mHandler;
+    private int updateLocsInterval = 5000; // 5 seconds by default, can be changed later
+    private int updateMessagesInterval = 62000; // 62 seconds by default, can be changed later
+    private Handler updateLocsHandler;
+    private Handler updateMessagesHandler;
 
 
     private void scrollMyListViewToBottom() {
@@ -279,7 +281,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         setUpMapIfNeeded();
 
         //Timer setup
-        mHandler = new Handler();
+        updateLocsHandler = new Handler();
+        updateMessagesHandler = new Handler();
 //        startRepeatingTask(); <--moved to onStart
 
         messageList = (ListView) findViewById(R.id.listView);
@@ -916,22 +919,33 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
 
+    Runnable messageStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+//            updateStatus(); //this function can change value of updateMessagesInterval.
+            postGetRoomMessages();
+            updateMessagesHandler.postDelayed(messageStatusChecker, updateMessagesInterval);
+        }
+    };
+
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
-//            updateStatus(); //this function can change value of mInterval.
+//            updateStatus(); //this function can change value of updateLocsInterval.
             postGetRoom();
-            mHandler.postDelayed(mStatusChecker, mInterval);
+            updateLocsHandler.postDelayed(mStatusChecker, updateLocsInterval);
         }
     };
 
     void startRepeatingTask() {
         Log.d(TAG, "startRepeatingTask");
         mStatusChecker.run();
+        messageStatusChecker.run();
     }
 
     void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
+        updateLocsHandler.removeCallbacks(mStatusChecker);
+        updateMessagesHandler.removeCallbacks(messageStatusChecker);
     }
 
 //    public void startGetRoomTimer() {
