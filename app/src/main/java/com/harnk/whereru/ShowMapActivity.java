@@ -85,6 +85,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private List<Marker> markers = new ArrayList<Marker>();
     private ListView messageList;
     private ArrayAdapter<String> arrayAdapter;
+
+    private ArrayList<Message> messageObjectList = new ArrayList<Message>();
+    private MessageAdapter messageObjectAdapter;
+
     private ArrayAdapter<String> pinArrayAdapter;
     private Spinner spinner;
     private DeviceUuidFactory deviceUuidFactory;
@@ -285,7 +289,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         updateMessagesHandler = new Handler();
 //        startRepeatingTask(); <--moved to onStart
 
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        messageObjectList = deviceSingleton.getMessages();
         messageList = (ListView) findViewById(R.id.listView);
+        messageObjectAdapter = new MessageAdapter(this, R.layout.single_row, messageObjectList);
+        messageList.setAdapter(messageObjectAdapter);
 
         //GCM stuff
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
@@ -727,10 +735,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 this,
                 android.R.layout.simple_list_item_1,
                 deviceSingleton.getTempTextArray() );
+//        messageList.setAdapter(arrayAdapter);
+
 
         //ADD MessageAdapter here to replace above stuff
-
-        messageList.setAdapter(arrayAdapter);
+        messageObjectList = deviceSingleton.getMessages();
+        messageList = (ListView) findViewById(R.id.listView);
+        messageObjectAdapter = new MessageAdapter(this, R.layout.single_row, messageObjectList);
+        messageList.setAdapter(messageObjectAdapter);
         ///////////////////////////////////////////
     }
 
