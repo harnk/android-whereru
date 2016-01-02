@@ -1,5 +1,7 @@
 package com.harnk.whereru;
 
+import android.location.Location;
+
 import java.util.Date;
 
 /**
@@ -74,6 +76,31 @@ public class Message {
     }
 
     public float getDistanceFromMeInMeters() {
+        // compare the message location to my current location and return it
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        //get location of me
+        Location locA = deviceSingleton.getMyNewLocation();
+
+        // Handle the location of the saved message
+        String[] strings =  this.getLocation().split(",");
+        double latitude = Double.parseDouble(strings[0]);
+        double longitude = Double.parseDouble(strings[1]);
+
+        Location locB = new Location("dummyprovider");
+        locB.setLatitude(latitude);
+        locB.setLongitude(longitude);
+
+        float distanceFromMeInMeters = locA.distanceTo(locB);
+        float distanceInYards = (float) (distanceFromMeInMeters * 1.09361);
+        float distanceInMiles = distanceInYards / 1760;
+
+//        if (distanceInYards > 500) {
+//            ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInMiles) + " mi");
+//        } else {
+//            ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInYards) + " y");
+//        }
+
+
         return distanceFromMeInMeters;
     }
 

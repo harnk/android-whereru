@@ -53,7 +53,16 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             // check to see if each individual textview is null.
             // if not, assign some text!
             if (senderInfo != null){
-                senderInfo.setText(message.getSenderName());
+                float distanceInYards = (float) (message.getDistanceFromMeInMeters() * 1.09361);
+                float distanceInMiles = distanceInYards / 1760;
+                String showDistance;
+
+            if (distanceInYards > 500) {
+                    showDistance = String.format("%.1f", distanceInMiles) + " mi";
+                } else {
+                    showDistance =  String.format("%.1f", distanceInYards) + " y";
+                }
+                senderInfo.setText(message.getSenderName() + " DATE, " + showDistance);
             }
             if (messageToShow != null){
                 messageToShow.setText(message.getText());
