@@ -1,11 +1,13 @@
 package com.harnk.whereru;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class MessageAdapter extends ArrayAdapter<Message> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
 
+        Message message = objects.get(position);
         // assign the view we are converting to a local variable
         View view = convertView;
 
@@ -42,13 +45,11 @@ public class MessageAdapter extends ArrayAdapter<Message> {
 		 *
 		 * Therefore, i refers to the current Item object.
 		 */
-        Message message = objects.get(position);
 
         if (message != null) {
 
             TextView senderInfo = (TextView) view.findViewById(R.id.senderNameDateDistanceTextView);
             TextView messageToShow = (TextView) view.findViewById(R.id.messageTextView);
-            ImageView bubbleImage = (ImageView) view.findViewById(R.id.bubbleImageView);
 
             // check to see if each individual textview is null.
             // if not, assign some text!
@@ -67,9 +68,23 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             if (messageToShow != null){
                 messageToShow.setText(message.getText());
             }
-            if (bubbleImage != null){
-//                mt.setText("Price: ");
+
+            //Check whether message is mine to show green background and align to right
+//            if(message.isMine())
+            if (message != null)
+            {
+                messageToShow.setBackgroundResource(R.drawable.bubble_right_hand);
+                messageToShow.setGravity(Gravity.RIGHT);
             }
+            //If not mine then it is from sender to show orange background and align to left
+            else
+            {
+                messageToShow.setBackgroundResource(R.drawable.bubble_left_hand);
+                messageToShow.setGravity(Gravity.LEFT);
+            }
+//            messageToShow.setTextColor(R.color.textColor);
+
+
         }
 
         // the view must be returned to our activity
