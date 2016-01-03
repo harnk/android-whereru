@@ -294,6 +294,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         messageList = (ListView) findViewById(R.id.listView);
         messageObjectAdapter = new MessageAdapter(this, R.layout.single_row, messageObjectList);
         messageList.setAdapter(messageObjectAdapter);
+        messageList.setDivider(null);
+        messageList.setDividerHeight(0);
 
         //GCM stuff
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);

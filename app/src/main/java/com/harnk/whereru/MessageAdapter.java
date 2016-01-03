@@ -74,12 +74,20 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
             if (message.getSenderName().equals(deviceSingleton.getNickname())) {
                 messageToShow.setBackgroundResource(R.drawable.bubble_right_hand);
-                messageToShow.setGravity(Gravity.RIGHT);
+//                messageToShow.setGravity(Gravity.RIGHT);
+
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)messageToShow.getLayoutParams();
+                params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                messageToShow.setLayoutParams(params); //causes layout update
+
+                senderInfo.setGravity(Gravity.RIGHT);
+
             } else {
                 //If not mine then it is from sender to show orange background and align to left
 
                 messageToShow.setBackgroundResource(R.drawable.bubble_left_hand);
                 messageToShow.setGravity(Gravity.LEFT);
+                senderInfo.setGravity(Gravity.LEFT);
             }
 //            messageToShow.setTextColor(R.color.textColor);
 
