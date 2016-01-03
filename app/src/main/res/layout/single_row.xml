@@ -6,8 +6,9 @@
         android:id="@+id/senderNameDateDistanceTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:text="dadroid Today, 12:00 AM, 8.2 y"
+        android:textColor="#0780FE"
         android:layout_below="@+id/textView"
         android:layout_toRightOf="@+id/imageView"
         android:layout_alignParentTop="true"
@@ -27,8 +28,8 @@
         android:shadowColor="@color/wallet_highlighted_text_holo_light"
         android:shadowDx="1"
         android:shadowDy="1"
-        android:textColor="@color/wallet_highlighted_text_holo_light"
-        android:textSize="15sp"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
         />
 
 </RelativeLayout>
