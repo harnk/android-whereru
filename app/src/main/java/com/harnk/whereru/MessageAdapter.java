@@ -71,14 +71,13 @@ public class MessageAdapter extends ArrayAdapter<Message> {
 
             //Check whether message is mine to show green background and align to right
 //            if(message.isMine())
-            if (message != null)
-            {
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            if (message.getSenderName().equals(deviceSingleton.getNickname())) {
                 messageToShow.setBackgroundResource(R.drawable.bubble_right_hand);
                 messageToShow.setGravity(Gravity.RIGHT);
-            }
-            //If not mine then it is from sender to show orange background and align to left
-            else
-            {
+            } else {
+                //If not mine then it is from sender to show orange background and align to left
+
                 messageToShow.setBackgroundResource(R.drawable.bubble_left_hand);
                 messageToShow.setGravity(Gravity.LEFT);
             }
