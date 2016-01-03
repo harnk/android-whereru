@@ -29,7 +29,7 @@
         android:shadowDx="1"
         android:shadowDy="1"
         android:textColor="#FFFFFF"
-        android:textSize="13sp"
+        android:textSize="14sp"
         />
 
 </RelativeLayout>
