@@ -27,7 +27,7 @@
         android:shadowColor="@color/wallet_highlighted_text_holo_light"
         android:shadowDx="1"
         android:shadowDy="1"
-        android:textColor="@color/wallet_bright_foreground_disabled_holo_light"
+        android:textColor="@color/wallet_highlighted_text_holo_light"
         android:textSize="15sp"
         />
 
