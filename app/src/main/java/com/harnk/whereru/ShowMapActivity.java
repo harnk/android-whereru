@@ -900,13 +900,43 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         return true;
     }
 
+    private boolean isToday(String dateStringToCheck){
+        try{
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            Date checkDate = formatter.parse(dateStringToCheck);
+            Date todaysDate = formatter.parse(today);
+
+            if (checkDate.compareTo(todaysDate)<0) {
+//                Log.d("SCXTT", "today is Greater than dateStringToCheck: " + checkDate.compareTo(todaysDate));
+                return false;
+            } else {
+                return true;
+            }
+
+        }catch (ParseException e1){
+            e1.printStackTrace();
+        }
+        return true;
+    }
+
+    private boolean isYesterday(String dateStringToCheck){
+        return false;
+    }
+
     private String formatDateTime(String inputDateTime) throws ParseException {
         // formatDateTime received: 2015-11-26 01:58:37
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date myDate = simpleDateFormat.parse(inputDateTime);
         DateFormat outputFormat = new SimpleDateFormat("M/d/yy, h:mm aa");
-        String outputDateStr = outputFormat.format(myDate);
+        DateFormat todayFormat = new SimpleDateFormat("h:mm aa");
+        String outputDateStr = "";
+        if (isToday(inputDateTime.split(" ")[0])){
+            outputDateStr = "Today, " + todayFormat.format(myDate);
+        } else {
+            outputDateStr = outputFormat.format(myDate);
+        }
         return outputDateStr;
     }
 
