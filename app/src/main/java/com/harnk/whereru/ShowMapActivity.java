@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
@@ -698,7 +699,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         roomArray.add(roomObj);
                     }
                     Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
-                    updatePointsOnMapWithAPIData();
+                    try {
+                        updatePointsOnMapWithAPIData();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -895,7 +900,18 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         return true;
     }
 
-    public void updatePointsOnMapWithAPIData() {
+    private String formatDateTime(String inputDateTime) throws ParseException {
+        // formatDateTime received: 2015-11-26 01:58:37
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date myDate = simpleDateFormat.parse(inputDateTime);
+        DateFormat outputFormat = new SimpleDateFormat("M/d/yy, h:mm aa");
+        String outputDateStr = outputFormat.format(myDate);
+        return outputDateStr;
+    }
+
+
+    public void updatePointsOnMapWithAPIData() throws ParseException {
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         Location location = new Location("dummyprovider");
 
@@ -994,11 +1010,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 float distanceFromMeInMeters = locA.distanceTo(locB);
                                 float distanceInYards = (float) (distanceFromMeInMeters * 1.09361);
                                 float distanceInMiles = distanceInYards / 1760;
-
+                                String dateTimeToDisplay = formatDateTime(thisRoomObj.getMemberUpdateTime());
                                 if (distanceInYards > 500) {
-                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInMiles) + " mi");
+                                    ann.setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInMiles) + " mi");
                                 } else {
-                                    ann.setSnippet(thisRoomObj.getMemberUpdateTime() + ", " + String.format("%.1f", distanceInYards) + " y");
+                                    ann.setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInYards) + " y");
                                 }
 //                                ann.hideInfoWindow();
 //                                ann.showInfoWindow();
@@ -1021,8 +1037,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
 
                             String annotationTitle = thisRoomObj.getMemberNickName();
-//                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + pinDisplayDistance;
-                            String annotationSnippet = thisRoomObj.getMemberUpdateTime() + ", " + "XXX.X y";
+                            String dateTimeToDisplay = formatDateTime(thisRoomObj.getMemberUpdateTime());
+                            String annotationSnippet = dateTimeToDisplay + ", " + "";
                             Marker annNew = mMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(latitude, longitude))
                                     .icon(BitmapDescriptorFactory.fromResource(useThisPin))

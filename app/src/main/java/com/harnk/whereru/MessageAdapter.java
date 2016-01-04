@@ -1,6 +1,7 @@
 package com.harnk.whereru;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by scottnull on 1/1/16.
@@ -30,6 +36,7 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         Message message = objects.get(position);
         // assign the view we are converting to a local variable
         View view = convertView;
+        String showDistance = "";
 
         // first check to see if the view is null. if so, we have to inflate it.
         // to inflate it basically means to render, or show, the view.
@@ -56,14 +63,13 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             if (senderInfo != null){
                 float distanceInYards = (float) (message.getDistanceFromMeInMeters() * 1.09361);
                 float distanceInMiles = distanceInYards / 1760;
-                String showDistance;
+
 
             if (distanceInYards > 500) {
-                    showDistance = String.format("%.1f", distanceInMiles) + " mi";
+                    showDistance = String.format("%.1f", distanceInMiles) + " miles";
                 } else {
                     showDistance =  String.format("%.1f", distanceInYards) + " y";
                 }
-                senderInfo.setText(message.getSenderName() + " DATE, " + showDistance);
             }
             if (messageToShow != null){
                 messageToShow.setText(message.getText());
@@ -74,13 +80,15 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
             if (message.getSenderName().equals(deviceSingleton.getNickname())) {
                 messageToShow.setBackgroundResource(R.drawable.bubble_right_hand);
-//                messageToShow.setGravity(Gravity.RIGHT);
-
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)messageToShow.getLayoutParams();
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 messageToShow.setLayoutParams(params); //causes layout update
-
                 senderInfo.setGravity(Gravity.RIGHT);
+                try {
+                    senderInfo.setText(" You " + formatDateTime(message.getDate()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
 
             } else {
                 //If not mine then it is from sender to show orange background and align to left
@@ -88,6 +96,11 @@ public class MessageAdapter extends ArrayAdapter<Message> {
                 messageToShow.setBackgroundResource(R.drawable.bubble_left_hand);
                 messageToShow.setGravity(Gravity.LEFT);
                 senderInfo.setGravity(Gravity.LEFT);
+                try {
+                    senderInfo.setText(message.getSenderName() + " " + formatDateTime(message.getDate()) + ", " + showDistance);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
 //            messageToShow.setTextColor(R.color.textColor);
 
@@ -97,5 +110,15 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         // the view must be returned to our activity
         return view;
 
+    }
+
+    private String formatDateTime(String inputDateTime) throws ParseException {
+        // formatDateTime received: 2015-11-26 01:58:37
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date myDate = simpleDateFormat.parse(inputDateTime);
+        DateFormat outputFormat = new SimpleDateFormat("M/d/yy, h:mm aa");
+        String outputDateStr = outputFormat.format(myDate);
+        return outputDateStr;
     }
 }
