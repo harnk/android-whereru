@@ -23,7 +23,7 @@
         android:layout_marginRight="5sp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/bubble_left_hand"
-        android:text="hey how are you out there in message land"
+        android:text="this text will be replaced by actual messages"
         android:layout_below="@+id/senderNameDateDistanceTextView"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
