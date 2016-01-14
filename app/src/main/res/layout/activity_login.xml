@@ -18,7 +18,7 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="WhereRU lets you chat with and see the current locations on a map of anyone else currently in the same map group. Join or create a map group name and share it with your friends. If they join the same map group, you can see each other's location and messages. You can exit a map group at any time and your location will no longer be visible by others."
+            android:text="WhereRU lets you chat with and see the current locations on a map of anyone else currently in the same map group. Join or create a map group name and share it with your friends. If they join the same map group, you can see each other's location and messages. You can sign out of a map group at any time and your location will no longer be visible by others."
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginLeft="20dp"
