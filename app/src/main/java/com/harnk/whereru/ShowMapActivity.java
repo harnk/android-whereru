@@ -622,13 +622,14 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
 
             //play beep
-            try {
-                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-                r.play();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Log.d("SCXTT", "The play beep sound was here");
+//            try {
+//                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+//                r.play();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 
         } else {
             //Store this in the singleton
