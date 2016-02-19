@@ -694,6 +694,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         String gmtDateString = obj.getString("loc_time");
                         // add the guys above to Room roomObj
                         Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
+                        Log.d("SCXTT", "adding room object from returned JSON");
                         roomArray.add(roomObj);
                     }
                     Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
