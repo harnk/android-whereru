@@ -458,6 +458,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 this.arrayAdapter.notifyDataSetChanged();
                 this.scrollMyListViewToBottom();
                 centerMapOnMyLoc();
+                this.postFindRequest();
                 break;
             case R.id.action_sat:
                 Log.d(TAG, "Sat/Map selected");
@@ -649,6 +650,77 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     public void onDisconnected() {
         // TODO Auto-generated method stub
+
+    }
+
+    private void postFindRequest() {
+        Log.d("SCXTT", "postFindRequest");
+        //Do a getroom API call
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("cmd", "find");
+        params.put("user_id", deviceSingleton.getUserId());
+        params.put("location", deviceSingleton.getMyLocStr());
+        params.put("text", "notused");
+
+        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+                String decoded = null;  // example for one encoding type
+                try { decoded = new String(response, "UTF-8");}
+                catch (UnsupportedEncodingException e) { e.printStackTrace();}
+
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                        ", decoded:" + decoded);
+
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    JSONArray list = new JSONArray(decoded);
+                    Log.d(TAG, "API Call postGetRoomWIP getroom returned list.length: " + list.length());
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    roomArray.clear();
+
+                    for (int i=0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+                        String nickName = obj.getString("nickname");
+                        String mLocation = obj.getString("location");
+                        String gmtDateString = obj.getString("loc_time");
+                        // add the guys above to Room roomObj
+                        Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
+                        roomArray.add(roomObj);
+                    }
+                    Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
+                    try {
+                        updatePointsOnMapWithAPIData();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "postGetRoomWIP API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+        Log.v(TAG, "API call response out of catch = " + response);
+
 
     }
 
