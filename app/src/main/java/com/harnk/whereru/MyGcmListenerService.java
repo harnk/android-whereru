@@ -30,8 +30,13 @@ public class MyGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = data.getString("message");
+        String extra = data.getString("extra");
+        String asker = data.getString("asker");
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
+        Log.d(TAG, "extra: " + extra);
+        Log.d(TAG, "asker: " + asker);
+        // if extra == whereru then start updating loc and copy iOS [self postImhere:asker];
 
         if (from.startsWith("/topics/")) {
             // message received from some topic.
