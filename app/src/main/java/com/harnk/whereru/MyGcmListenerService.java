@@ -38,10 +38,13 @@ public class MyGcmListenerService extends GcmListenerService {
         Log.d(TAG, "asker: " + asker);
         // if extra == whereru then start updating loc and copy iOS [self postImhere:asker];
 
-        if (from.startsWith("/topics/")) {
-            // message received from some topic.
+        if (extra.equals("whereru")){
+            Log.d("SCXTT", "silent push received");
+            sendSilentNotification(asker);
+
         } else {
-            // normal downstream message.
+            sendNotification(message);
+
         }
 
         // [START_EXCLUDE]
@@ -56,16 +59,32 @@ public class MyGcmListenerService extends GcmListenerService {
          * In some cases it may be useful to show a notification indicating to the user
          * that a message was received.
          */
-        sendNotification(message);
+//        sendNotification(message);
         // [END_EXCLUDE]
     }
     // [END receive_message]
 
     /**
      * Create and show a simple notification containing the received GCM message.
-     *
-     * @param message GCM message received.
      */
+    private void sendSilentNotification(String asker) {
+        Intent intent = new Intent(this, ShowMapActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.orange)
+                .setContentTitle("WhereRU")
+                .setContentText(asker)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
     private void sendNotification(String message) {
         Intent intent = new Intent(this, ShowMapActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -75,7 +94,7 @@ public class MyGcmListenerService extends GcmListenerService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.orange)
-                .setContentTitle("GCM Message")
+                .setContentTitle("WhereRU")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
