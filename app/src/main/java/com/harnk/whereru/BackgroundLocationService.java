@@ -51,6 +51,7 @@ public class BackgroundLocationService extends Service {
     protected boolean isBetterLocation(Location location, Location currentBestLocation) {
         if (currentBestLocation == null) {
             // A new location is always better than no location
+            Log.d("SCXTT", "A new location is always better than no location");
             return true;
         }
 
@@ -71,6 +72,7 @@ public class BackgroundLocationService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        Log.d("SCXTT", "accuracyDelta:" + accuracyDelta);
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
         boolean isSignificantlyLessAccurate = accuracyDelta > 200;
@@ -133,10 +135,11 @@ public class BackgroundLocationService extends Service {
 
         public void onLocationChanged(final Location loc)
         {
-            Log.d("SCXTT", "Location changed in BACKGROUND SERVICE");
+            Log.d("SCXTT", "Location changed in BACKGROUND SERVICE to Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
             if(isBetterLocation(loc, previousBestLocation)) {
                 loc.getLatitude();
                 loc.getLongitude();
+                Log.d("SCXTT", "BETTER location found Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
                 intent.putExtra("Latitude", loc.getLatitude());
                 intent.putExtra("Longitude", loc.getLongitude());
                 intent.putExtra("Provider", loc.getProvider());
