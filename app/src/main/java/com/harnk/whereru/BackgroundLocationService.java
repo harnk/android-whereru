@@ -28,6 +28,7 @@ public class BackgroundLocationService extends Service {
     @Override
     public void onCreate()
     {
+        Log.d("SCXTT", "starting background location service");
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
     }
@@ -105,7 +106,7 @@ public class BackgroundLocationService extends Service {
     public void onDestroy() {
         // handler.removeCallbacks(sendUpdatesToUI);
         super.onDestroy();
-        Log.v("SCXTT", "DONE");
+        Log.d("SCXTT", "DONE");
         locationManager.removeUpdates(listener);
     }
 
@@ -132,7 +133,7 @@ public class BackgroundLocationService extends Service {
 
         public void onLocationChanged(final Location loc)
         {
-            Log.i("SCXTT", "Location changed");
+            Log.d("SCXTT", "Location changed in BACKGROUND SERVICE");
             if(isBetterLocation(loc, previousBestLocation)) {
                 loc.getLatitude();
                 loc.getLongitude();

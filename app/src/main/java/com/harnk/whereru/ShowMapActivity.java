@@ -274,6 +274,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("SCXTT", " onCreate");
+        Log.d("SCXTT", " starting background location service from ShowMapActivity - will need to move this");
+        startService(new Intent(this, BackgroundLocationService.class));
         MapsInitializer.initialize(getApplicationContext());
 
         okToRecenterMap = true;

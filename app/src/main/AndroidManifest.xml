@@ -82,6 +82,12 @@
             </intent-filter>
         </service>
         <!-- [END gcm_listener] -->
+        <!-- [START background location service] -->
+        <service
+            android:name=".BackgroundLocationService"
+            android:exported="false" >
+        </service>
+        <!-- [END background location service] -->
         <!-- [START instanceId_listener] -->
         <service
             android:name=".MyInstanceIDListenerService"
