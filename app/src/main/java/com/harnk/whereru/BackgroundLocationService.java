@@ -17,7 +17,7 @@ import android.widget.Toast;
 public class BackgroundLocationService extends Service {
 
     public static final String BROADCAST_ACTION = "Hello World";
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private static final int THIRTY_SECONDS = 10000;
     public LocationManager locationManager;
     public MyLocationListener listener;
     public Location previousBestLocation = null;
@@ -52,18 +52,20 @@ public class BackgroundLocationService extends Service {
         if (currentBestLocation == null) {
             // A new location is always better than no location
             Log.d("SCXTT", "A new location is always better than no location");
+//            previousBestLocation = location;
             return true;
         }
 
         // Check whether the new location fix is newer or older
         long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+        boolean isSignificantlyNewer = timeDelta > THIRTY_SECONDS;
+        boolean isSignificantlyOlder = timeDelta < -THIRTY_SECONDS;
         boolean isNewer = timeDelta > 0;
 
         // If it's been more than two minutes since the current location, use the new location
         // because the user has likely moved
         if (isSignificantlyNewer) {
+            Log.d("SCXTT", "new location is isSignificantlyNewer");
             return true;
             // If the new location is more than two minutes older, it must be worse
         } else if (isSignificantlyOlder) {
@@ -83,10 +85,13 @@ public class BackgroundLocationService extends Service {
 
         // Determine location quality using a combination of timeliness and accuracy
         if (isMoreAccurate) {
+            Log.d("SCXTT", "new location isMoreAccurate");
             return true;
         } else if (isNewer && !isLessAccurate) {
+            Log.d("SCXTT", "new location isNewer && !isLessAccurate");
             return true;
         } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+            Log.d("SCXTT", "new location is isNewer && !isSignificantlyLessAccurate && isFromSameProvider");
             return true;
         }
         return false;
@@ -136,6 +141,9 @@ public class BackgroundLocationService extends Service {
         public void onLocationChanged(final Location loc)
         {
             Log.d("SCXTT", "Location changed in BACKGROUND SERVICE to Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
+            if (previousBestLocation == null) {
+                previousBestLocation = loc;
+            }
             if(isBetterLocation(loc, previousBestLocation)) {
                 loc.getLatitude();
                 loc.getLongitude();
@@ -144,8 +152,16 @@ public class BackgroundLocationService extends Service {
                 intent.putExtra("Longitude", loc.getLongitude());
                 intent.putExtra("Provider", loc.getProvider());
                 sendBroadcast(intent);
+                //SCXTT What to do with the intent above???
+                //SCXTT do and API call to update my loc
+                this.postMyLoc();
+                previousBestLocation = loc;
 
             }
+        }
+
+        public void postMyLoc() {
+            Log.d("SCXTT", "NEED TO postMyLoc now baby");
         }
 
         public void onProviderDisabled(String provider)
