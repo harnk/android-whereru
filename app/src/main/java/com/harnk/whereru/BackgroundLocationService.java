@@ -162,6 +162,32 @@ public class BackgroundLocationService extends Service {
 
         public void postMyLoc() {
             Log.d("SCXTT", "NEED TO postMyLoc now baby");
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            if (deviceSingleton.isImInARoom()){
+                Log.d("SCXTT", "Im IN a room");
+            } else {
+                Log.d("SCXTT", "Im not in a room");
+            }
+//            if ([[SingletonClass singleObject] imInARoom]) {
+////        NSLog(@"imInARoom is true");
+//                if (!_isUpdating) {
+////            NSLog(@"were not _isUpdating");
+//                    if (_deviceHasMoved) {
+//                        _isUpdating = YES;
+////                NSLog(@" bkgnd posting my loc %@", [[SingletonClass singleObject] myLocStr]);
+//                        [self postLiveUpdate];
+//                        _deviceHasMoved = NO;
+//
+//                        // Need to check response for anyone still looking and set _isAnyoneStillLooking
+//
+//                    }
+//                } else {
+////            NSLog(@"no API call since _isUpdating is already YES = Busy");
+//                }
+//            } else {
+////        NSLog(@"imInARoom is false - no update");
+//            }
+
         }
 
         public void onProviderDisabled(String provider)
