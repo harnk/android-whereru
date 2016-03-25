@@ -21,6 +21,7 @@ public class BackgroundLocationService extends Service {
     public LocationManager locationManager;
     public MyLocationListener listener;
     public Location previousBestLocation = null;
+    private boolean isUpdating;
 
     Intent intent;
     int counter = 0;
@@ -31,6 +32,7 @@ public class BackgroundLocationService extends Service {
         Log.d("SCXTT", "starting background location service");
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
+        isUpdating = false;
     }
 
     @Override
@@ -165,6 +167,9 @@ public class BackgroundLocationService extends Service {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
             if (deviceSingleton.isImInARoom()){
                 Log.d("SCXTT", "Im IN a room");
+                if (!isUpdating){
+                    
+                }
             } else {
                 Log.d("SCXTT", "Im not in a room");
             }
