@@ -11,6 +11,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+
 /**
  * Created by scottnull on 2/13/16.
  */
@@ -107,6 +110,15 @@ public class BackgroundLocationService extends Service {
 
     protected void postLiveUpdate() {
         Log.d("SCXTT", "postLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
+        //Do a liveupdate API call
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("cmd", "liveupdate");
+        params.put("user_id", deviceSingleton.getUserId());
+        params.put("location", deviceSingleton.getMyLocStr());
+
+
         //do a bunch of stuff then ...
         resetIsUpdating();
     }
