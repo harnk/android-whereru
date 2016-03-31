@@ -117,6 +117,7 @@ public class BackgroundLocationService extends Service {
         params.put("cmd", "liveupdate");
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
+        // need to add API call next
 
 
         //do a bunch of stuff then ...
