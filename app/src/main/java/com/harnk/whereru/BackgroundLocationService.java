@@ -22,6 +22,7 @@ public class BackgroundLocationService extends Service {
     public MyLocationListener listener;
     public Location previousBestLocation = null;
     private boolean isUpdating;
+    private boolean deviceHasMoved;
 
     Intent intent;
     int counter = 0;
@@ -42,6 +43,7 @@ public class BackgroundLocationService extends Service {
         listener = new MyLocationListener();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 4000, 0, listener);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4000, 0, listener);
+        deviceHasMoved = true;
     }
 
     @Override
@@ -99,6 +101,16 @@ public class BackgroundLocationService extends Service {
         return false;
     }
 
+    protected void resetIsUpdating(){
+        isUpdating = false;
+    }
+
+    protected void postLiveUpdate() {
+        Log.d("SCXTT", "postLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
+        //do a bunch of stuff then ...
+        resetIsUpdating();
+    }
+
 
 
     /** Checks whether two providers are the same */
@@ -147,6 +159,7 @@ public class BackgroundLocationService extends Service {
                 previousBestLocation = loc;
             }
             if(isBetterLocation(loc, previousBestLocation)) {
+                deviceHasMoved = true;
                 loc.getLatitude();
                 loc.getLongitude();
                 Log.d("SCXTT", "BETTER location found Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
@@ -166,9 +179,13 @@ public class BackgroundLocationService extends Service {
             Log.d("SCXTT", "NEED TO postMyLoc now baby");
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
             if (deviceSingleton.isImInARoom()){
-                Log.d("SCXTT", "Im IN a room");
-                if (!isUpdating){
-                    
+                Log.d("SCXTT", "Im IN a room and isUpdating:" + isUpdating + ", deviceHasMoved:" + deviceHasMoved);
+                if (!isUpdating && deviceHasMoved){
+                    Log.d("SCXTT", "!isUpdating && deviceHasMoved so postLiveUpdate dood");
+                    isUpdating = true;
+                    postLiveUpdate();
+                    deviceHasMoved = false;
+
                 }
             } else {
                 Log.d("SCXTT", "Im not in a room");
