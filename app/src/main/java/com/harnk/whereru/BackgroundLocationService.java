@@ -11,8 +11,19 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+
+import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by scottnull on 2/13/16.
@@ -26,6 +37,7 @@ public class BackgroundLocationService extends Service {
     public Location previousBestLocation = null;
     private boolean isUpdating;
     private boolean deviceHasMoved;
+    private static final String TAG = "SCXTT";
 
     Intent intent;
     int counter = 0;
@@ -117,8 +129,57 @@ public class BackgroundLocationService extends Service {
         params.put("cmd", "liveupdate");
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
+        Log.d("SCXTT2", "BACKGROUND postLiveUpdate is using deviceSingleton.getMyLocStr():" + deviceSingleton.getMyLocStr());
         // need to add API call next
+        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
 
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+                String decoded = null;  // example for one encoding type
+                try { decoded = new String(response, "UTF-8");}
+                catch (UnsupportedEncodingException e) { e.printStackTrace();}
+
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                        ", decoded:" + decoded);
+
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    JSONArray list = new JSONArray(decoded);
+                    Log.d(TAG, "API BACKGROUND Call postLiveUpdate returned list.length: " + list.length());
+//                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+//
+//                    for (int i=0; i < list.length(); i++) {
+//                        JSONObject obj = list.getJSONObject(i);
+//                        String nickName = obj.getString("nickname");
+//                        String mLocation = obj.getString("location");
+//                        String gmtDateString = obj.getString("loc_time");
+//                        // add the guys above to Room roomObj
+//                        Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
+//                        Log.d("SCXTT", "adding room object from returned JSON");
+//                        roomArray.add(roomObj);
+//                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "postGetRoomWIP API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
 
         //do a bunch of stuff then ...
         resetIsUpdating();
