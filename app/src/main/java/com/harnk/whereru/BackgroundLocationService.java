@@ -151,6 +151,7 @@ public class BackgroundLocationService extends Service {
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     JSONArray list = new JSONArray(decoded);
                     Log.d(TAG, "API BACKGROUND Call postLiveUpdate returned list.length: " + list.length());
+                    // SCXTT Need to change this next loop to look for a looker like iOS does
 //                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
 //
 //                    for (int i=0; i < list.length(); i++) {
