@@ -274,8 +274,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("SCXTT", " onCreate");
-        Log.d("SCXTT", " starting background location service from ShowMapActivity - will need to move this");
-        startService(new Intent(this, BackgroundLocationService.class));
         MapsInitializer.initialize(getApplicationContext());
 
         okToRecenterMap = true;
@@ -370,11 +368,21 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     protected void onStop() {
         super.onStop();
-        Log.d("SCXTT", " onStop");
+        Log.d("SCXTT2", " onStop");
+        Log.d("SCXTT2", " starting background location service from ShowMapActivity.onStop");
+        startService(new Intent(this, BackgroundLocationService.class));
 
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("SCXTT2", " restarting ShowMapActivity - so stop the background location service NOW");
+        stopService(new Intent(this, BackgroundLocationService.class));
+
     }
 
     @Override
