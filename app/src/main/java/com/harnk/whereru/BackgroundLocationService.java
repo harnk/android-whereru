@@ -153,17 +153,23 @@ public class BackgroundLocationService extends Service {
                     Log.d(TAG, "API BACKGROUND Call postLiveUpdate returned list.length: " + list.length());
                     // SCXTT Need to change this next loop to look for a looker like iOS does
 //                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//
-//                    for (int i=0; i < list.length(); i++) {
-//                        JSONObject obj = list.getJSONObject(i);
-//                        String nickName = obj.getString("nickname");
-//                        String mLocation = obj.getString("location");
-//                        String gmtDateString = obj.getString("loc_time");
-//                        // add the guys above to Room roomObj
-//                        Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
-//                        Log.d("SCXTT", "adding room object from returned JSON");
-//                        roomArray.add(roomObj);
-//                    }
+
+                    boolean foundALooker = false;
+                    for (int i=0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+                        String nickName = obj.getString("nickname");
+                        String mLooking = obj.getString("looking");
+                        if (mLooking.equals("1")) {
+                            Log.d("SCXTT2", nickName + " is looking");
+                            foundALooker = true;
+                            Log.d("SCXTT2", "Toggle singleton BOOL someoneIsLooking to foundALooker=YES and exit the loop");
+                        }
+                    }
+                    if (foundALooker){
+                        Log.d("SCXTT2", "since someoneIsLooking keep updating my loc in the background");
+                    } else {
+                        Log.d("SCXTT2", "NO ONE is looking so why am I wasting my battery with these background API calls?!?");
+                    }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
