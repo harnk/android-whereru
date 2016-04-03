@@ -76,9 +76,8 @@ public class MyGcmListenerService extends GcmListenerService {
 
         } else {
             sendNotification(message);
-
+            updateMyActivity(this, "HEY GO GET ROOM MESSGES DUDE - only do this for messages");
         }
-        updateMyActivity(this, "HEY GO GET ROOM MESSGES DUDE - dont do this for every gcm, just messages?");
 
 
         // [START_EXCLUDE]
