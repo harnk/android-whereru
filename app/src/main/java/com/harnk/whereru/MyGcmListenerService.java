@@ -12,6 +12,9 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by snull on 11/20/15.
  */
@@ -30,12 +33,41 @@ public class MyGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String message = data.getString("message");
+        String payload = data.getString("payload");
         String extra = data.getString("extra");
         String asker = data.getString("asker");
+        String loc = "";
+
+        JSONObject jsonObject = null;
+        // Parse the json payload
+        try {
+            jsonObject = new JSONObject(payload);
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+        try {
+            extra = jsonObject.getString("extra");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        try {
+            asker = jsonObject.getString("asker");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        try {
+            loc = jsonObject.getString("loc");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
         Log.d(TAG, "From: " + from);
+        Log.d(TAG, "payload: " + payload);
         Log.d(TAG, "Message: " + message);
         Log.d(TAG, "extra: " + extra);
         Log.d(TAG, "asker: " + asker);
+        Log.d(TAG, "loc: " + loc);
+
         // if extra == whereru then start updating loc and copy iOS [self postImhere:asker];
 
         if (extra.equals("whereru")){
