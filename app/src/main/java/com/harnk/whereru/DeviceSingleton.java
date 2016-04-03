@@ -61,6 +61,10 @@ public class DeviceSingleton {
         this.messages = messages;
     }
 
+    public void clearMessages() {
+        this.messages.clear();
+    }
+
     public ArrayList<Message> getMessages() {
         return messages;
     }

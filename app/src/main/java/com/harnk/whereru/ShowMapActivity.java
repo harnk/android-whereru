@@ -122,6 +122,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private int updateMessagesInterval = 62000; // 62 seconds by default, can be changed later
     private Handler updateLocsHandler;
     private Handler updateMessagesHandler;
+    private Context context;
 
 
     private void scrollMyListViewToBottom() {
@@ -392,6 +393,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         startRepeatingTask();
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
+        // Register as a broadcast receiver
+        this.registerReceiver(mMessageReceiver, new IntentFilter("com.harnk.whereru.gcm"));
     }
 
     @Override
@@ -399,7 +402,22 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         stopRepeatingTask();
         super.onPause();
+        this.unregisterReceiver(mMessageReceiver);
     }
+
+    //This is the handler that will manager to process the broadcast intent
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            Log.d("SCXTT", "in ShowMapActivity we got a GCM and they successfully told us about it message:" + message);
+            postGetRoomMessages();
+
+            //do other stuff here
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -875,6 +893,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     JSONArray list = new JSONArray(decoded);
                     Log.d(TAG, "API Call getroommessages returned list.length: " + list.length());
+                    // Reset messages so they don't duplicate
+                    deviceSingleton.clearMessages();
                     for (int i = 0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
 

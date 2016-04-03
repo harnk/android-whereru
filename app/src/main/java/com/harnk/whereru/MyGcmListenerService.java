@@ -78,6 +78,8 @@ public class MyGcmListenerService extends GcmListenerService {
             sendNotification(message);
 
         }
+        updateMyActivity(this, "HEY GO GET ROOM MESSGES DUDE - dont do this for every gcm, just messages?");
+
 
         // [START_EXCLUDE]
         /**
@@ -100,6 +102,7 @@ public class MyGcmListenerService extends GcmListenerService {
      * Create and show a simple notification containing the received GCM message.
      */
     private void sendSilentNotification(String asker) {
+        Log.d("SCXTT", "sendSilentNotification to ShowMapActivity.class");
         Intent intent = new Intent(this, ShowMapActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -118,6 +121,7 @@ public class MyGcmListenerService extends GcmListenerService {
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
     private void sendNotification(String message) {
+        Log.d("SCXTT", "sendNotification to ShowMapActivity.class");
         Intent intent = new Intent(this, ShowMapActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -136,5 +140,17 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
+
+    static void updateMyActivity(Context context, String message) {
+
+        Intent intent = new Intent("com.harnk.whereru.gcm");
+
+        //put whatever data you want to send, if any
+        intent.putExtra("message", message);
+
+        //send broadcast
+        Log.d("SCXTT", "SENDING context.sendBroadcast(intent)");
+        context.sendBroadcast(intent);
     }
 }
