@@ -34,8 +34,8 @@ public class MyGcmListenerService extends GcmListenerService {
     public void onMessageReceived(String from, Bundle data) {
         String message = data.getString("message");
         String payload = data.getString("payload");
-        String extra = data.getString("extra");
-        String asker = data.getString("asker");
+        String extra = "";
+        String asker = "";
         String loc = "";
 
         JSONObject jsonObject = null;
