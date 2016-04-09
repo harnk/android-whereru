@@ -691,6 +691,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
         params.put("text", "notused");
+        Toast.makeText(this, "Receiving Updates ... ", Toast.LENGTH_LONG).show();
 
         client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
