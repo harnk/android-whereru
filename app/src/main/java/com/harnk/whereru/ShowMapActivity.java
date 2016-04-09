@@ -413,6 +413,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             // Extract data included in the Intent
             String message = intent.getStringExtra("message");
             Log.d("SCXTT", "in ShowMapActivity we got a GCM and they successfully told us about it message:" + message);
+            Toast.makeText(context, "Receiving Updates", Toast.LENGTH_LONG).show();
             postGetRoomMessages();
 
             //do other stuff here
@@ -691,7 +692,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
         params.put("text", "notused");
-        Toast.makeText(this, "Receiving Updates ... ", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Refreshing ... ", Toast.LENGTH_LONG).show();
 
         client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
