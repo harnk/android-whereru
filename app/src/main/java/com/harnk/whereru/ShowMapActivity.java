@@ -486,7 +486,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                Temporary below
                 this.arrayAdapter.notifyDataSetChanged();
                 this.scrollMyListViewToBottom();
-                centerMapOnMyLoc();
                 this.postFindRequest();
                 break;
             case R.id.action_sat:
@@ -558,6 +557,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 }
             });
             mMap = customMapFragment.getMap();
+            // Enabling MyLocation Layer of Google Map
+            mMap.setMyLocationEnabled(true);
 
             if (mMap != null) {
                 setUpMap();
@@ -565,23 +566,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
-    private void centerMapOnMyLoc() {
-        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-        String myLoc = deviceSingleton.getMyLocStr();
-        String[] latlong =  myLoc.split(",");
-        double latitude = Double.parseDouble(latlong[0]);
-        double longitude = Double.parseDouble(latlong[1]);
-//        scxtt wip take next line out for now
-//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12.0f)); // was 16.0f
-    }
-
     @Override
     public void onMapReady(GoogleMap map) {
-        map.addMarker(new MarkerOptions()
-                .position(new LatLng(41.739362, -86.098086))
-                .title("Hello world"));
-        Log.d("SCXTT", "doing onMapReady callback is this working but LOCATION is still hardcoded and wrong");
-//        centerMapOnMyLoc();
+//        map.addMarker(new MarkerOptions()
+//                .position(new LatLng(41.739362, -86.098086))
+//                .title("Hello world"));
     }
 
 
@@ -592,7 +581,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("My Location - this is currently hardcoded and wrong"));
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(41.739362, -86.099086)).title("My Location - this is currently hardcoded and wrong"));
     }
 
 
@@ -625,11 +614,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         Log.v("SCXTT", "Found the location");
 
 
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-
-
 
 
         if (mLastLocation != null) {
@@ -645,9 +631,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
             //ALSO Store this in the singleton
             deviceSingleton.setMyLocStr(mLatitudeText + ", " + mLongitudeText);
-
-//            centerMapOnMyLoc();
-
 
 
 
@@ -1237,7 +1220,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 Log.v(TAG, "WIP this next line is throwing exception errors every so often - FIX IT");
                 float distanceMoved = oldLoc.distanceTo(loc);
                 Log.v(TAG, "WE MOVED oldLocStr:[" + oldLocStr + "] newLocStr:[" + newLocStr + "] distance in meters: " + distanceMoved);
-                centerMapOnMyLoc();
             }
 
             deviceSingleton.setMyNewLocation(loc);
