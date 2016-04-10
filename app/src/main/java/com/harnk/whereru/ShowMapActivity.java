@@ -237,6 +237,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(TAG, "pressed OK");
+                        //kill the markers list to avoid all the toasts for left the room people
+                        mMap.clear();
+                        markers.clear();
 
                         //alertview should call postLeaveRequest
                         postLeaveRequest();
