@@ -104,6 +104,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private boolean okToRecenterMap;
     private boolean pinPickerButtonEnabled;
     private String centerOnThisGuy;
+    private boolean mIsInForegroundMode;
 
 
     //GCM stuff
@@ -392,6 +393,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onResume() {
         super.onResume();
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.setMapIsActive(true);
         setUpMapIfNeeded();
         startRepeatingTask();
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
@@ -405,7 +408,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         stopRepeatingTask();
         super.onPause();
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        deviceSingleton.setMapIsActive(false);
         this.unregisterReceiver(mMessageReceiver);
+        mIsInForegroundMode = true;
     }
 
     //This is the handler that will manager to process the broadcast intent
