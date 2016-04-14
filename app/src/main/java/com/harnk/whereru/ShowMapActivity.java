@@ -105,6 +105,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private boolean pinPickerButtonEnabled;
     private String centerOnThisGuy;
     private boolean mIsInForegroundMode;
+    private boolean firstRun;
 
 
     //GCM stuff
@@ -350,6 +351,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public void onStart() {
         super.onStart();
         Log.d("SCXTT", " onStart");
+        firstRun = true;
         mGoogleApiClient.connect();
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         //if NOT singleton.joinedChat, set singleton.imInARoom=false, show LoginActivity
@@ -385,7 +387,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d("SCXTT2", " restarting ShowMapActivity - so stop the background location service NOW");
+        Log.d("SCXTT2", " onRestart() ShowMapActivity - so stop the background location service NOW");
         stopService(new Intent(this, BackgroundLocationService.class));
 
     }
@@ -393,6 +395,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("SCXTT2", " onResume");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(true);
         setUpMapIfNeeded();
@@ -408,6 +411,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         stopRepeatingTask();
         super.onPause();
+        Log.d("SCXTT2", " onPause");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(false);
         this.unregisterReceiver(mMessageReceiver);
@@ -446,14 +450,19 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position));
-                DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
-                centerOnThisGuy = tempPinArray.get(position);
-                okToRecenterMap = true;
-                if (centerOnThisGuy.equals("[" + deviceSingleton.getSecretCode() + "]")) {
-                    Toast.makeText(view.getContext(), "Returning to view of entire map group " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                if (firstRun) {
+                    firstRun = false;
                 } else {
-                    Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                    Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position) + " at position:" + position);
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    centerOnThisGuy = tempPinArray.get(position);
+                    deviceSingleton.setCenterOnThisGuy(centerOnThisGuy);
+                    okToRecenterMap = true;
+                    if (centerOnThisGuy.equals("[" + deviceSingleton.getSecretCode() + "]")) {
+                        Toast.makeText(view.getContext(), "Returning to view of entire map group " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 //scxtty
@@ -719,7 +728,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         Log.d("SCXTT", "adding room object from returned JSON");
                         roomArray.add(roomObj);
                     }
-                    Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
+                    centerOnThisGuy = deviceSingleton.getCenterOnThisGuy();
+                    Log.v(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
                     try {
                         updatePointsOnMapWithAPIData();
                     } catch (ParseException e) {
@@ -794,7 +804,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         Room roomObj = new Room(deviceSingleton.getSecretCode(), nickName, mLocation, gmtDateString);
                         roomArray.add(roomObj);
                     }
-                    Log.d(TAG, "WIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
+                    Log.v(TAG, "postGetRoomWIP remove this next call to updatePointsOnMapWithAPIData and make a notification trigger it like iOS");
                     try {
                         updatePointsOnMapWithAPIData();
                     } catch (ParseException e) {
@@ -976,10 +986,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //    }
 
     private int getThisGuysRow(String thisGuy){
-        for(int i = 0; i < roomArray.size(); i++) {
-            Room thisRoomObj = roomArray.get(i);
-            if (thisGuy.equals(thisRoomObj.getMemberNickName())) {
-                return i;
+        if (thisGuy != null) {
+            for(int i = 0; i < roomArray.size(); i++) {
+                Room thisRoomObj = roomArray.get(i);
+                Log.d("SCXTT", "getThisGuysRow roomArray.size() = " + roomArray.size() + ", thisGuy:" + thisGuy + " thisRoomObj:" +thisRoomObj);
+                if (thisGuy.equals(thisRoomObj.getMemberNickName())) {
+                    return i;
+                }
             }
         }
             return -1;
@@ -1103,6 +1116,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                             }
                             Toast.makeText(this, ann.getTitle() + " has left the map group", Toast.LENGTH_SHORT).show();
                             centerOnThisGuy = "";
+                            deviceSingleton.setCenterOnThisGuy("");
 //                            markers.get(m).remove();
                             ann.remove();
                             markers.remove(m);
@@ -1159,9 +1173,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                             if (toast != null){
                                 toast.cancel();
                             }
-                            toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
-                            toast.setText(who + " is in the map group");
-                            toast.show();
+                            if (!firstRun) {
+                                toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+                                toast.setText(who + " is in the map group");
+                                toast.show();
+                            }
 //                            Toast.makeText(this, who + " is in the map group", Toast.LENGTH_SHORT).show();
 
                             String annotationTitle = thisRoomObj.getMemberNickName();
@@ -1183,32 +1199,39 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         pinArrayAdapter.notifyDataSetChanged();
         // Recenter map
         if (okToRecenterMap) {
-            if (getThisGuysRow(centerOnThisGuy) >= 0) {
-                Log.d("SCXTT", "we found a guy to center on");
-                Room thisRoomObj = roomArray.get(getThisGuysRow(centerOnThisGuy));
-                Log.d(TAG, "CENTER ON " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
+            if (roomArray.size() > 0) {
+                centerOnThisGuy = deviceSingleton.getCenterOnThisGuy();
+                Log.d("SCXTT", "GETTING centerOnThisGuy from Singleton:" + centerOnThisGuy);
 
-                String[] strings = thisRoomObj.getMemberLocation().split(",");
-                double latitude = Double.parseDouble(strings[0]);
-                double longitude = Double.parseDouble(strings[1]);
-                Log.d("SCXTT", "center on latitude: " + latitude + " logitude: " + longitude);
+                if (getThisGuysRow(centerOnThisGuy) >= 0) {
+                    Log.d("SCXTT", "we found a guy to center on: " + centerOnThisGuy);
+                    deviceSingleton.setCenterOnThisGuy(centerOnThisGuy);
+                    Room thisRoomObj = roomArray.get(getThisGuysRow(centerOnThisGuy));
+                    Log.d(TAG, "CENTER ON " + thisRoomObj.getMemberNickName() + " at " + thisRoomObj.getMemberLocation() + " " + thisRoomObj.getMemberUpdateTime() + " memberPinImage:" + thisRoomObj.getMemberPinImage());
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
+                    String[] strings = thisRoomObj.getMemberLocation().split(",");
+                    double latitude = Double.parseDouble(strings[0]);
+                    double longitude = Double.parseDouble(strings[1]);
+                    Log.v("SCXTT", "center on latitude: " + latitude + " logitude: " + longitude);
 
-            } else {
-                Log.d("SCXTT", "NO guy to center on");
-                LatLngBounds.Builder allBuilder = new LatLngBounds.Builder();
-                //Convert Location to LatLng
-                LatLng swLatLng = new LatLng(southWestLat, southWestLon);
-                allBuilder.include(swLatLng);
-                LatLng neLatLng = new LatLng(northEastLat, northEastLon);
-                allBuilder.include(neLatLng);
-                LatLngBounds region = allBuilder.build();
-                int padding = 10; // offset from edges of the map in pixels
-                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(region, padding);
-                mMap.animateCamera(cu);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
+
+                } else {
+                    Log.d("SCXTT", "NO guy to center on");
+//                deviceSingleton.setCenterOnThisGuy("");
+                    LatLngBounds.Builder allBuilder = new LatLngBounds.Builder();
+                    //Convert Location to LatLng
+                    LatLng swLatLng = new LatLng(southWestLat, southWestLon);
+                    allBuilder.include(swLatLng);
+                    LatLng neLatLng = new LatLng(northEastLat, northEastLon);
+                    allBuilder.include(neLatLng);
+                    LatLngBounds region = allBuilder.build();
+                    int padding = 10; // offset from edges of the map in pixels
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(region, padding);
+                    mMap.animateCamera(cu);
 //                [self reCenterMap:region meters:meters];
-            } //end getThisGuysRow
+                } //end getThisGuysRow
+            }
         }
     }
 

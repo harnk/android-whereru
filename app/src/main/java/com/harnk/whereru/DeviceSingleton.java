@@ -20,7 +20,9 @@ public class DeviceSingleton {
     private String userId;
     private String gcmToken;
     private String myLocStr;
-    private String nickname, secretCode;
+    private String nickname;
+    private String secretCode;
+    private String centerOnThisGuy;
     private Location myNewLocation;
     private boolean notificationsAreDisabled;
     private boolean imInARoom;
@@ -130,6 +132,14 @@ public class DeviceSingleton {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("savedSecretCode", mySecretCode);
         editor.commit();
+    }
+
+    public String getCenterOnThisGuy() {
+        return centerOnThisGuy;
+    }
+
+    public void setCenterOnThisGuy(String centerOnThisGuy) {
+        this.centerOnThisGuy = centerOnThisGuy;
     }
 
     public Location getMyNewLocation() {
