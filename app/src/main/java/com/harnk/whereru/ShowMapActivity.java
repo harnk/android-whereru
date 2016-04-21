@@ -1215,6 +1215,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     Log.v("SCXTT", "center on latitude: " + latitude + " logitude: " + longitude);
 
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
+                    if (centerOnThisGuy.length() > 0) {
+                        spinner.setSelection(getThisGuysRow(centerOnThisGuy) + 1);
+                    }
 
                 } else {
                     Log.d("SCXTT", "NO guy to center on");
