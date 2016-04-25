@@ -1149,9 +1149,20 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                                 locB.setLatitude(latitude);
                                 locB.setLongitude(longitude);
 
-                                float distanceFromMeInMeters = locA.distanceTo(locB);
-                                float distanceInYards = (float) (distanceFromMeInMeters * 1.09361);
-                                float distanceInMiles = distanceInYards / 1760;
+                                float distanceFromMeInMeters;
+                                float distanceInYards;
+                                float distanceInMiles;
+                                if (locA == null || locB == null ) {
+                                    distanceFromMeInMeters = (float) 0.0;
+                                    distanceInYards = (float) 0.0;
+                                    distanceInMiles = (float) 0.0;
+                                } else {
+                                    distanceFromMeInMeters = locA.distanceTo(locB);
+                                    distanceInYards = (float) (distanceFromMeInMeters * 1.09361);
+                                    distanceInMiles = distanceInYards / 1760;
+
+                                }
+
                                 String dateTimeToDisplay = formatDateTime(thisRoomObj.getMemberUpdateTime());
                                 if (distanceInYards > 500) {
                                     ann.setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInMiles) + " mi");
