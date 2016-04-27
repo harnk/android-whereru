@@ -351,6 +351,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public void onStart() {
         super.onStart();
         Log.d("SCXTT", " onStart");
+        mIsInForegroundMode = false;
         firstRun = true;
         mGoogleApiClient.connect();
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
@@ -388,15 +389,16 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d("SCXTT2", " onRestart() ShowMapActivity - so stop the background location service NOW");
-        stopService(new Intent(this, BackgroundLocationService.class));
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("SCXTT2", " onResume");
+        Log.d("SCXTT2", " onResume() ShowMapActivity - so stop the background location service NOW");
+        stopService(new Intent(this, BackgroundLocationService.class));
+
+        mIsInForegroundMode = true;
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(true);
         setUpMapIfNeeded();
@@ -413,6 +415,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         stopRepeatingTask();
         super.onPause();
         Log.d("SCXTT2", " onPause");
+        mIsInForegroundMode = false;
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(false);
         this.unregisterReceiver(mMessageReceiver);
@@ -765,6 +768,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     public void postGetRoomWIP() {
         //Do a getroom API call
+        if  (!mIsInForegroundMode) {
+            Log.d("SCXTT", "were OUT so abort postGetRoomWIP");
+            return;
+        }
+
         Log.d("SCXTT", "postGetRoomWIP set looking = 1");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
@@ -863,6 +871,9 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     public void postGetRoomMessages(){
         Log.d(TAG, "postGetRoomMessages");
+        if  (!mIsInForegroundMode) {
+            return;
+        }
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client2 = new AsyncHttpClient();
         RequestParams params2 = new RequestParams();
@@ -972,6 +983,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         Log.d("SCXTT", "showMapActivity.stopRepeatingTask");
         updateLocsHandler.removeCallbacks(mStatusChecker);
         updateMessagesHandler.removeCallbacks(messageStatusChecker);
+
     }
 
 //    public void startGetRoomTimer() {
