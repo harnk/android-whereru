@@ -123,6 +123,7 @@ public class BackgroundLocationService extends Service {
     protected void postLiveUpdate() {
         Log.v(TAG, "postLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
         //Do a liveupdate API call
+        Log.d("SCXTT", "postLiveUpdate set looking = 0");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();

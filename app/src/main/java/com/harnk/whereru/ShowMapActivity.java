@@ -377,6 +377,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         super.onStop();
         Log.d("SCXTT2", " onStop");
         Log.d("SCXTT2", " starting background location service from ShowMapActivity.onStop");
+        this.stopRepeatingTask();
         startService(new Intent(this, BackgroundLocationService.class));
 
         if (mGoogleApiClient.isConnected()) {
@@ -764,6 +765,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     public void postGetRoomWIP() {
         //Do a getroom API call
+        Log.d("SCXTT", "postGetRoomWIP set looking = 1");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -967,6 +969,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     void stopRepeatingTask() {
+        Log.d("SCXTT", "showMapActivity.stopRepeatingTask");
         updateLocsHandler.removeCallbacks(mStatusChecker);
         updateMessagesHandler.removeCallbacks(messageStatusChecker);
     }
