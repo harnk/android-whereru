@@ -37,7 +37,7 @@ public class BackgroundLocationService extends Service {
     public Location previousBestLocation = null;
     private boolean isUpdating;
     private boolean deviceHasMoved;
-    private static final String TAG = "BackgroundLocationServi";
+    private static final String TAG = "SCXTT";
 
     Intent intent;
     int counter = 0;
@@ -123,7 +123,7 @@ public class BackgroundLocationService extends Service {
     protected void postLiveUpdate() {
         Log.v(TAG, "postLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
         //Do a liveupdate API call
-        Log.d("SCXTT", "postLiveUpdate set looking = 0");
+        Log.d(TAG, "BackgroundLocationService postLiveUpdate set looking = 0");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -142,10 +142,16 @@ public class BackgroundLocationService extends Service {
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 //setting the new location AND GETTING THE JSON RESPONSE!
                 String decoded = null;  // example for one encoding type
-                try { decoded = new String(response, "UTF-8");}
-                catch (UnsupportedEncodingException e) { e.printStackTrace();}
+                try {
+                    Log.d(TAG, "BackgroundLocationService try");
+                    decoded = new String(response, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    Log.d(TAG, "BackgroundLocationService catch");
+                    e.printStackTrace();
+                }
 
-                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                Log.d(TAG, "API BACKGROUND call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
                         ", decoded:" + decoded);
 
                 try {

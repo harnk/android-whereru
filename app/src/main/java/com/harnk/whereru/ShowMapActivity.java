@@ -419,7 +419,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(false);
         this.unregisterReceiver(mMessageReceiver);
-        mIsInForegroundMode = true;
+//        mIsInForegroundMode = true;
+        this.postDoneLookingLiveUpdate();
     }
 
     //This is the handler that will manager to process the broadcast intent
@@ -792,10 +793,13 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 //setting the new location AND GETTING THE JSON RESPONSE!
                 String decoded = null;  // example for one encoding type
-                try { decoded = new String(response, "UTF-8");}
-                catch (UnsupportedEncodingException e) { e.printStackTrace();}
+                try {
+                    decoded = new String(response, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
 
-                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " + response.length +
                         ", decoded:" + decoded);
 
                 try {
@@ -805,7 +809,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     roomArray.clear();
 
-                    for (int i=0; i < list.length(); i++) {
+                    for (int i = 0; i < list.length(); i++) {
                         JSONObject obj = list.getJSONObject(i);
                         String nickName = obj.getString("nickname");
                         String mLocation = obj.getString("location");
@@ -841,6 +845,80 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
+    protected void postDoneLookingLiveUpdate() {
+        Log.v(TAG, "postLastLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
+        //Do a liveupdate API call
+        Log.d("SCXTT", "postLastLiveUpdate set looking = 0");
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("cmd", "liveupdate");
+        params.put("user_id", deviceSingleton.getUserId());
+        params.put("location", deviceSingleton.getMyLocStr());
+        Log.v(TAG, "BACKGROUND postLastLiveUpdate is using deviceSingleton.getMyLocStr():" + deviceSingleton.getMyLocStr());
+        // need to add API call next
+        client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                //setting the new location AND GETTING THE JSON RESPONSE!
+                String decoded = null;  // example for one encoding type
+                try { decoded = new String(response, "UTF-8");}
+                catch (UnsupportedEncodingException e) { e.printStackTrace();}
+
+                Log.v(TAG, "API call onSuccess = " + statusCode + ", Headers: " + headers[0] + ", response.length: " +response.length +
+                        ", decoded:" + decoded);
+
+                try {
+                    DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+                    JSONArray list = new JSONArray(decoded);
+                    Log.v(TAG, "API BACKGROUND Call postLiveUpdate returned list.length: " + list.length());
+                    // SCXTT Need to change this next loop to look for a looker like iOS does
+//                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                    boolean foundALooker = false;
+                    for (int i=0; i < list.length(); i++) {
+                        JSONObject obj = list.getJSONObject(i);
+                        String nickName = obj.getString("nickname");
+                        String mLooking = obj.getString("looking");
+                        if (mLooking.equals("1")) {
+                            Log.d(TAG, nickName + " is looking");
+                            foundALooker = true;
+                            Log.d(TAG, "Toggle singleton BOOL someoneIsLooking to foundALooker=YES and exit the loop");
+                        }
+                    }
+                    if (foundALooker){
+                        Log.d(TAG, "since someoneIsLooking keep updating my loc in the background");
+                    } else {
+                        Log.d(TAG, "NO ONE is looking so why am I wasting my battery with these background API calls?!?");
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                Log.v(TAG, "postGetRoomWIP API call onFailure = " + errorResponse);
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+
+        //do a bunch of stuff then ...
+        isUpdating = false;
+    }
+
+
     private void hookUpPinListAdapter(){
         this.pinArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, tempPinArray);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tempPinArray);
@@ -872,6 +950,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public void postGetRoomMessages(){
         Log.d(TAG, "postGetRoomMessages");
         if  (!mIsInForegroundMode) {
+            Log.d("SCXTT", "were OUT so abort postGetRoomMessages");
             return;
         }
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
