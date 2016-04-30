@@ -91,7 +91,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private MessageAdapter messageObjectAdapter;
 
     private ArrayAdapter<String> pinArrayAdapter;
-    private Spinner spinner;
+    private NDSpinner spinner;
     private DeviceUuidFactory deviceUuidFactory;
     private ArrayList<Room> roomArray = new ArrayList<Room>();
     private ArrayList<String> tempPinArray = new ArrayList<String>(); // temporary pin list
@@ -104,6 +104,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     private boolean okToRecenterMap;
     private boolean pinPickerButtonEnabled;
     private String centerOnThisGuy;
+    private String lastCenterOnThisGuy;
     private boolean mIsInForegroundMode;
     private boolean firstRun;
 
@@ -286,6 +287,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         pickerIsUp = false;
         isFromNotification = false;
         centerOnThisGuy = "";
+        lastCenterOnThisGuy = "@$%^$&##HJJKLHD#hhjkljhkljhl";
 
         setContentView(R.layout.activity_show_map);
 //        MapsInitializer.initialize(this);
@@ -442,7 +444,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.findItem(R.id.spinner);
-        spinner = (Spinner) MenuItemCompat.getActionView(item);
+
+        spinner = (NDSpinner) MenuItemCompat.getActionView(item);
 
         for(int i = 0; i < roomArray.size(); i++) {
             tempPinArray.add(roomArray.get(i).getMemberNickName());
@@ -465,8 +468,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     okToRecenterMap = true;
                     if (centerOnThisGuy.equals("[" + deviceSingleton.getSecretCode() + "]")) {
                         Toast.makeText(view.getContext(), "Returning to view of entire map group " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                    } else if (lastCenterOnThisGuy.equals(centerOnThisGuy)) {
+                        Log.d(TAG, "lastCenterOnThisGuy: " + lastCenterOnThisGuy + ", centerOnThisGuy: " + centerOnThisGuy);
                     } else {
                         Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "lastCenterOnThisGuy: " + lastCenterOnThisGuy + ", centerOnThisGuy: " + centerOnThisGuy);
+                        lastCenterOnThisGuy = centerOnThisGuy;
                     }
                 }
 
@@ -1083,7 +1090,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         if (thisGuy != null) {
             for(int i = 0; i < roomArray.size(); i++) {
                 Room thisRoomObj = roomArray.get(i);
-                Log.d("SCXTT", "getThisGuysRow roomArray.size() = " + roomArray.size() + ", thisGuy:" + thisGuy + " thisRoomObj:" +thisRoomObj);
+                Log.v("SCXTT", "getThisGuysRow roomArray.size() = " + roomArray.size() + ", thisGuy:" + thisGuy + " thisRoomObj:" +thisRoomObj);
                 if (thisGuy.equals(thisRoomObj.getMemberNickName())) {
                     return i;
                 }

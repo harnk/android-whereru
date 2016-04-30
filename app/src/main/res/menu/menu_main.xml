@@ -8,7 +8,7 @@
         android:title="pin"
         android:orderInCategory="101"
         app:showAsAction="always"
-        app:actionViewClass="android.widget.Spinner" />
+        app:actionViewClass="com.harnk.whereru.NDSpinner" />
 
     <!--<item android:id="@+id/action_pinpicker"-->
         <!--android:orderInCategory="102"-->
