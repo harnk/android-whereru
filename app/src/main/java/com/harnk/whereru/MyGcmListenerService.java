@@ -72,7 +72,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         if (extra.equals("whereru")){
             Log.d("SCXTT", "silent push received");
-            sendSilentNotification(asker);
+            startBackgroundLocationService(asker);
 
         } else {
             sendNotification(message);
@@ -100,25 +100,11 @@ public class MyGcmListenerService extends GcmListenerService {
     /**
      * Create and show a simple notification containing the received GCM message.
      */
-    private void sendSilentNotification(String asker) {
-        Log.d("SCXTT", "sendSilentNotification to ShowMapActivity.class");
-        Intent intent = new Intent(this, ShowMapActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-
-//        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-//                .setSmallIcon(R.drawable.orange)
-//                .setContentTitle("WhereRU")
-//                .setContentText(asker)
-//                .setAutoCancel(true)
-//                .setContentIntent(pendingIntent);
-//
-//        NotificationManager notificationManager =
-//                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//
-//        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    private void startBackgroundLocationService(String asker) {
+        Log.d("SCXTT", "GCM -> startBackgroundLocationService to BackgroundLocationService.class");
+        startService(new Intent(this, BackgroundLocationService.class));
     }
+
     private void sendNotification(String message) {
         Log.d("SCXTT", "sendNotification to ShowMapActivity.class");
         Intent intent = new Intent(this, ShowMapActivity.class);

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,6 +17,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -78,7 +80,7 @@ import java.util.UUID;
 import cz.msebera.android.httpclient.Header;
 
 public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 //    public static final String API_URL = "http://www.altcoinfolio.com//whereruprod/api/api.php";
 
@@ -119,6 +121,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     //Location service
     public GoogleApiClient mGoogleApiClient;
+    public LocationManager foregroundLocationManager;
+    public LocationListener mlocListener;
 
     //Interval timers
     private int updateLocsInterval = 5000; // 5 seconds by default, can be changed later
@@ -179,7 +183,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
-    private void postLeaveRequest(){
+    private void postLeaveRequest() {
         Log.d(TAG, "postLeaveRequest");
         //postLeaveRequest should do API call cmd leave
         // if success - call userDidLeave
@@ -277,6 +281,39 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
+    private void startForegroundLocationManager() {
+        //Use the LocationManager class to obtain updated GPS locations
+        foregroundLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mlocListener = new MyLocationListener();
+        //                                                               0, 0, is minTime ms, minDistance meters
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        foregroundLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
+    }
+
+    private void stopForegroundLocationManager() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        foregroundLocationManager.removeUpdates(mlocListener);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -312,7 +349,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             @Override
             public void onReceive(Context context, Intent intent) {
                 mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-                Log.v(TAG,"mRegistrationBroadcastReceiver onReceive");
+                Log.v(TAG, "mRegistrationBroadcastReceiver onReceive");
                 SharedPreferences sharedPreferences =
                         PreferenceManager.getDefaultSharedPreferences(context);
                 boolean sentToken = sharedPreferences
@@ -337,15 +374,8 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         loadSingletonWithSharedPrefs();
 
 
-
         //Google API build
         buildGoogleApiClient();
-
-        //Use the LocationManager class to obtain updated GPS locations
-        LocationManager mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        LocationListener mlocListener = new MyLocationListener();
-        //                                                               0, 0, is minTime ms, minDistance meters
-        mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
 
     } ////END onCreate //////////////////////////////////////////////////////////////////////////////////
 
@@ -378,10 +408,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     protected void onStop() {
         super.onStop();
-        Log.d("SCXTT2", " onStop");
-        Log.d("SCXTT2", " starting background location service from ShowMapActivity.onStop");
-        this.stopRepeatingTask();
-        startService(new Intent(this, BackgroundLocationService.class));
 
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -399,7 +425,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         super.onResume();
         Log.d("SCXTT2", " onResume() ShowMapActivity - so stop the background location service NOW");
         stopService(new Intent(this, BackgroundLocationService.class));
-
+        startForegroundLocationManager();
         mIsInForegroundMode = true;
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(true);
@@ -413,10 +439,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        stopRepeatingTask();
         super.onPause();
-        Log.d("SCXTT2", " onPause");
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        stopForegroundLocationManager();
+        stopRepeatingTask();
+        Log.d("SCXTT2", " onPause starting background location service from ShowMapActivity.onStop");
+        startService(new Intent(this, BackgroundLocationService.class));
         mIsInForegroundMode = false;
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         deviceSingleton.setMapIsActive(false);
@@ -461,7 +489,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 if (firstRun) {
                     firstRun = false;
                 } else {
-                    Log.d("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position) + " at position:" + position);
+                    Log.v("SCXTT", "WE CAUGHT A FISH: " + tempPinArray.get(position) + " at position:" + position);
                     DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
                     centerOnThisGuy = tempPinArray.get(position);
                     deviceSingleton.setCenterOnThisGuy(centerOnThisGuy);
@@ -472,7 +500,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         Log.d(TAG, "lastCenterOnThisGuy: " + lastCenterOnThisGuy + ", centerOnThisGuy: " + centerOnThisGuy);
                     } else {
                         Toast.makeText(view.getContext(), "Locating " + centerOnThisGuy, Toast.LENGTH_LONG).show();
-                        Log.d(TAG, "lastCenterOnThisGuy: " + lastCenterOnThisGuy + ", centerOnThisGuy: " + centerOnThisGuy);
+                        Log.v(TAG, "lastCenterOnThisGuy: " + lastCenterOnThisGuy + ", centerOnThisGuy: " + centerOnThisGuy);
                         lastCenterOnThisGuy = centerOnThisGuy;
                     }
                 }
@@ -1356,6 +1384,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         @Override
         public void onLocationChanged(Location loc) {
             DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            Log.d(TAG, "FOREGROUND GPS detected change");
 
             String oldLocStr = deviceSingleton.getMyLocStr() + "";
             String newLocStr = loc.getLatitude() + ", " + loc.getLongitude();
@@ -1376,7 +1405,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
         @Override
         public void onProviderDisabled(String provider) {
-            Log.d(TAG, "GPS Disabled");
+            Log.d(TAG, "SMA GPS Disabled");
 
         }
 

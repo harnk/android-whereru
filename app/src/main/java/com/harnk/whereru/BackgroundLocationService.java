@@ -40,12 +40,12 @@ public class BackgroundLocationService extends Service {
     private static final String TAG = "SCXTT";
 
     Intent intent;
-    int counter = 0;
+    int retryCounter = 0;
 
     @Override
     public void onCreate()
     {
-        Log.d(TAG, "starting background location service");
+        Log.d(TAG, "starting background location service BackgroundLocationService.onCreate ");
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
         isUpdating = false;
@@ -54,6 +54,7 @@ public class BackgroundLocationService extends Service {
     @Override
     public void onStart(Intent intent, int startId)
     {
+        Log.d(TAG, "BackgroundLocationService.onStart starting up the GPS");
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         listener = new MyLocationListener();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 4000, 0, listener);
@@ -68,6 +69,7 @@ public class BackgroundLocationService extends Service {
     }
 
     protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+        Log.v(TAG, "isBetterLocation??");
         if (currentBestLocation == null) {
             // A new location is always better than no location
             Log.v(TAG, "A new location is always better than no location");
@@ -87,8 +89,6 @@ public class BackgroundLocationService extends Service {
             Log.v(TAG, "new location is isSignificantlyNewer");
             return true;
             // If the new location is more than two minutes older, it must be worse
-        } else if (isSignificantlyOlder) {
-            return false;
         }
 
         // Check whether the new location fix is more or less accurate
@@ -113,6 +113,7 @@ public class BackgroundLocationService extends Service {
             Log.v(TAG, "new location is isNewer && !isSignificantlyLessAccurate && isFromSameProvider");
             return true;
         }
+        Log.v(TAG, "isBetterLocation ... nope");
         return false;
     }
 
@@ -123,14 +124,14 @@ public class BackgroundLocationService extends Service {
     protected void postLiveUpdate() {
         Log.v(TAG, "postLiveUpdate cmd:liveupdate user_id:getfromsigleton location:this is a loc string");
         //Do a liveupdate API call
-        Log.d(TAG, "BackgroundLocationService postLiveUpdate set looking = 0");
+        Log.v(TAG, "BackgroundLocationService postLiveUpdate set looking = 0");
         DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         params.put("cmd", "liveupdate");
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
-        Log.v(TAG, "BACKGROUND postLiveUpdate is using deviceSingleton.getMyLocStr():" + deviceSingleton.getMyLocStr());
+        Log.d(TAG, "BACKGROUND postLiveUpdate is using deviceSingleton.getMyLocStr():" + deviceSingleton.getMyLocStr());
         // need to add API call next
         client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
@@ -143,7 +144,7 @@ public class BackgroundLocationService extends Service {
                 //setting the new location AND GETTING THE JSON RESPONSE!
                 String decoded = null;  // example for one encoding type
                 try {
-                    Log.d(TAG, "BackgroundLocationService try");
+                    Log.v(TAG, "BackgroundLocationService try");
                     decoded = new String(response, "UTF-8");
                 }
                 catch (UnsupportedEncodingException e) {
@@ -174,8 +175,15 @@ public class BackgroundLocationService extends Service {
                     }
                     if (foundALooker){
                         Log.d(TAG, "since someoneIsLooking keep updating my loc in the background");
+                        retryCounter = 0;
                     } else {
-                        Log.d(TAG, "NO ONE is looking so why am I wasting my battery with these background API calls?!?");
+                        retryCounter += 1;
+                        Log.d(TAG, "NO ONE is looking so why am I wasting my battery with these background API calls?!? Retry:" + retryCounter);
+                        if (retryCounter > 3) {
+                            Log.d(TAG, "IM DONE IN BackgroundLocationService STOPPING");
+                            retryCounter = 0;
+                            stopSelf();
+                        }
                     }
 
                 } catch (JSONException e) {
@@ -215,7 +223,7 @@ public class BackgroundLocationService extends Service {
     public void onDestroy() {
         // handler.removeCallbacks(sendUpdatesToUI);
         super.onDestroy();
-        Log.d(TAG, "DONE");
+        Log.d(TAG, "onDestroy DONE");
         locationManager.removeUpdates(listener);
     }
 
@@ -242,20 +250,24 @@ public class BackgroundLocationService extends Service {
 
         public void onLocationChanged(final Location loc)
         {
-            Log.v(TAG, "Location changed in BACKGROUND SERVICE to Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
+            Log.v(TAG, "BACKGROUND SERVICE Location changed to Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
+            DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+            String newLocStr = loc.getLatitude() + ", " + loc.getLongitude();
+
             if (previousBestLocation == null) {
                 previousBestLocation = loc;
             }
             if(isBetterLocation(loc, previousBestLocation)) {
                 deviceHasMoved = true;
-                loc.getLatitude();
-                loc.getLongitude();
+                deviceSingleton.setMyNewLocation(loc);
+                deviceSingleton.setMyLocStr(newLocStr);
                 Log.d(TAG, "BETTER location found Lat:" + loc.getLatitude() + ", Lon:" + loc.getLongitude() + " Provider:" + loc.getProvider() + " Accuracy:" + loc.getAccuracy());
-                intent.putExtra("Latitude", loc.getLatitude());
-                intent.putExtra("Longitude", loc.getLongitude());
-                intent.putExtra("Provider", loc.getProvider());
-                sendBroadcast(intent);
+//                intent.putExtra("Latitude", loc.getLatitude());
+//                intent.putExtra("Longitude", loc.getLongitude());
+//                intent.putExtra("Provider", loc.getProvider());
+//                sendBroadcast(intent);
                 //SCXTT What to do with the intent above???
+
                 //SCXTT do and API call to update my loc
                 this.postMyLoc();
                 previousBestLocation = loc;
@@ -277,6 +289,7 @@ public class BackgroundLocationService extends Service {
                 }
             } else {
                 Log.d(TAG, "Im not in a room");
+                Log.d(TAG, "deviceSingleton.getSecretCode():" + deviceSingleton.getSecretCode());
             }
 //            if ([[SingletonClass singleObject] imInARoom]) {
 ////        NSLog(@"imInARoom is true");
