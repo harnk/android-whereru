@@ -37,6 +37,7 @@ public class BackgroundLocationService extends Service {
     public Location previousBestLocation = null;
     private boolean isUpdating;
     private boolean deviceHasMoved;
+    private boolean iHaventStartedTheGPSYet = true;
     private static final String TAG = "SCXTT";
 
     Intent intent;
@@ -45,23 +46,40 @@ public class BackgroundLocationService extends Service {
     @Override
     public void onCreate()
     {
-        Log.d(TAG, "starting background location service BackgroundLocationService.onCreate ");
+        Log.d(TAG, "BackgroundLocationService.onCreate ");
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
         isUpdating = false;
     }
 
-    @Override
-    public void onStart(Intent intent, int startId)
+    private void startLocationManager(Intent intent)
     {
-        Log.d(TAG, "BackgroundLocationService.onStart starting up the GPS");
+        Log.d(TAG, "BackgroundLocationService.startLocationManager starting up the GPS");
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         listener = new MyLocationListener();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 4000, 0, listener);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4000, 0, listener);
         deviceHasMoved = true;
+        iHaventStartedTheGPSYet = false;
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "BackgroundLocationService.onStartCommand");
+        if (iHaventStartedTheGPSYet) {
+            startLocationManager(intent);
+        } else {
+            Log.d(TAG, "DOOD IM ALREADY RUNNING - do nothing");
+        }
+//        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        listener = new MyLocationListener();
+//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 4000, 0, listener);
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4000, 0, listener);
+//        deviceHasMoved = true;
+        // We want this service to continue running until it is explicitly
+        // stopped, so return sticky.
+        return START_STICKY;
+    }
     @Override
     public IBinder onBind(Intent intent)
     {
@@ -170,7 +188,8 @@ public class BackgroundLocationService extends Service {
                         if (mLooking.equals("1")) {
                             Log.d(TAG, nickName + " is looking");
                             foundALooker = true;
-                            Log.d(TAG, "Toggle singleton BOOL someoneIsLooking to foundALooker=YES and exit the loop");
+                            Log.d(TAG, "Toggle singleton BOOL someoneIsLooking to foundALooker=YES and break the loop");
+                            break;
                         }
                     }
                     if (foundALooker){
@@ -225,6 +244,7 @@ public class BackgroundLocationService extends Service {
         super.onDestroy();
         Log.d(TAG, "onDestroy DONE");
         locationManager.removeUpdates(listener);
+        iHaventStartedTheGPSYet = true;
     }
 
     public static Thread performOnBackgroundThread(final Runnable runnable) {
@@ -290,6 +310,8 @@ public class BackgroundLocationService extends Service {
             } else {
                 Log.d(TAG, "Im not in a room");
                 Log.d(TAG, "deviceSingleton.getSecretCode():" + deviceSingleton.getSecretCode());
+                Log.d(TAG, "deviceSingleton.getUserId():" + deviceSingleton.getUserId());
+                Log.d(TAG, "deviceSingleton.getMyLocStr():" + deviceSingleton.getMyLocStr());
             }
 //            if ([[SingletonClass singleObject] imInARoom]) {
 ////        NSLog(@"imInARoom is true");
