@@ -435,6 +435,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                 new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
         // Register as a broadcast receiver
         this.registerReceiver(mMessageReceiver, new IntentFilter("com.harnk.whereru.gcm"));
+        this.postFindRequest();
     }
 
     @Override
@@ -733,7 +734,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
         params.put("user_id", deviceSingleton.getUserId());
         params.put("location", deviceSingleton.getMyLocStr());
         params.put("text", "notused");
-        Toast.makeText(this, "Refreshing ... ", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Refreshing ... \r \nMay take up to 30 secs to wake up devices", Toast.LENGTH_LONG).show();
 
         client.post(Constants.API_URL, params, new AsyncHttpResponseHandler() {
             @Override
