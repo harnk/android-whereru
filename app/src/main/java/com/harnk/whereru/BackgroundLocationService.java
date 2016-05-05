@@ -3,11 +3,13 @@ package com.harnk.whereru;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -48,6 +50,22 @@ public class BackgroundLocationService extends Service {
     {
         Log.d(TAG, "BackgroundLocationService.onCreate ");
         super.onCreate();
+        Log.d(TAG, "BackgroundLocationService.1");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.d(TAG, "BackgroundLocationService.2");
+        DeviceSingleton deviceSingleton = DeviceSingleton.getInstance();
+        Log.d(TAG, "BackgroundLocationService.3");
+        deviceSingleton.setJoinedChat(prefs.getBoolean("savedJoinedChat", false));
+        Log.d(TAG, "BackgroundLocationService.4");
+        deviceSingleton.setImInARoom(prefs.getBoolean("savedImInARoom", false));
+        Log.d(TAG, "BackgroundLocationService.5");
+        deviceSingleton.setUserId(prefs.getString("savedUserId", ""));
+        Log.d(TAG, "Setting Singleton savedUserId:" + prefs.getString("savedUserId", ""));
+        deviceSingleton.setSecretCode(prefs.getString("savedSecretCode", ""));
+        Log.d(TAG, "Setting Singleton savedSecretCode:" + prefs.getString("savedSecretCode", ""));
+        deviceSingleton.setNickname(prefs.getString("savedNickname", ""));
+        Log.d(TAG, "Setting Singleton savedNickname:" + prefs.getString("savedNickname", ""));
+
         intent = new Intent(BROADCAST_ACTION);
         isUpdating = false;
     }
