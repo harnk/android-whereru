@@ -217,7 +217,7 @@ public class BackgroundLocationService extends Service {
                         retryCounter += 1;
                         Log.d(TAG, "NO ONE is looking so why am I wasting my battery with these background API calls?!? Retry:" + retryCounter);
                         if (retryCounter > 3) {
-                            Log.d(TAG, "IM DONE IN BackgroundLocationService STOPPING");
+                            Log.d(TAG, "IM DONE IN BackgroundLocationService so STOPPING");
                             retryCounter = 0;
                             stopSelf();
                         }
