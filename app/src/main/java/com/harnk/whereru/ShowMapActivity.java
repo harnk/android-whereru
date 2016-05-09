@@ -627,9 +627,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
     @Override
     public void onMapReady(GoogleMap map) {
-//        map.addMarker(new MarkerOptions()
-//                .position(new LatLng(41.739362, -86.098086))
-//                .title("Hello world"));
+
     }
 
 
@@ -1295,14 +1293,11 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 
                                 String dateTimeToDisplay = formatDateTime(thisRoomObj.getMemberUpdateTime());
                                 if (distanceInYards > 500) {
-                                    ann.setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInMiles) + " mi");
+                                    markers.get(m).setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInMiles) + " mi");
                                 } else {
-                                    ann.setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInYards) + " y");
+                                    markers.get(m).setSnippet(dateTimeToDisplay + ", " + String.format("%.1f", distanceInYards) + " y");
                                 }
-//                                ann.hideInfoWindow();
-//                                ann.showInfoWindow();
-//                              ann.loctime = date; // this prob isnt working either
-                                ann.setPosition(new LatLng(latitude, longitude));
+                                markers.get(m).setPosition(new LatLng(latitude, longitude));
                             } // 0.000, 0.000
                         } // ann title = who
                     } // for marker in markers
@@ -1359,6 +1354,10 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                     if (centerOnThisGuy.length() > 0) {
                         spinner.setSelection(getThisGuysRow(centerOnThisGuy) + 1);
                     }
+                    int m = getThisGuysRow(centerOnThisGuy);
+                    markers.get(m).hideInfoWindow();
+                    markers.get(m).showInfoWindow();
+
 
                 } else {
                     Log.d("SCXTT", "NO guy to center on");
