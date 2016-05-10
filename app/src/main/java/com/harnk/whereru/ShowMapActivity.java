@@ -529,15 +529,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
             case R.id.action_login:
                 Log.d(TAG, "Signout/Login selected");
                 //throw alertview are they sure they want to signout
-
                 myShowDialog("Are you sure you wish to sign out of this map group? Your friends here will miss you!");
-//                myShowDialog("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
-//                showAlert("Sign Out of This Map Group", "Are you sure you wish to sign out of this map group? You friends here will miss you!");
-
-//            case R.id.action_pinpicker:
-//                Log.d(TAG, "Pin picker selected");
-////                centerOnThisGuy = "chels";
-////                okToRecenterMap = true;
                 break;
 
             case R.id.action_reload:
@@ -1254,10 +1246,6 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         southWestLon = (Math.min(southWestLon, ann.getPosition().longitude));
                         northEastLat = (Math.max(northEastLat, ann.getPosition().latitude));
                         northEastLon = (Math.max(northEastLon, ann.getPosition().longitude));
-//                        southWest.setLatitude(Math.min(southWest.getLatitude(), ann.getPosition().latitude));
-//                        southWest.setLongitude(Math.min(southWest.getLongitude(), ann.getPosition().longitude));
-//                        northEast.setLatitude(Math.max(northEast.getLatitude(), ann.getPosition().latitude));
-//                        northEast.setLongitude(Math.max(northEast.getLongitude(), ann.getPosition().longitude));
                         Log.v("SCXTT", "sw: " + southWestLat + ", " + southWestLon + " ne: " + northEastLat + ", " + northEastLon);
 
                         // Move the updated pin to its new locations
