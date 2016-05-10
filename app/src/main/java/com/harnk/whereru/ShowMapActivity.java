@@ -538,7 +538,7 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
 //                Log.d(TAG, "Pin picker selected");
 ////                centerOnThisGuy = "chels";
 ////                okToRecenterMap = true;
-//                break;
+                break;
 
             case R.id.action_reload:
                 Log.d(TAG, "Reload selected");
