@@ -1231,12 +1231,12 @@ public class ShowMapActivity extends AppCompatActivity implements OnMapReadyCall
                         //or if the person has left the room kill this ann
                         if (annTitleHasLeftRoom(ann.getTitle())) {
                             if (ann.getTitle().equals(centerOnThisGuy)) {
-//                               [self returnToAllWithMessage:@""];
-                                //implement
+                                centerOnThisGuy = "";
+                                deviceSingleton.setCenterOnThisGuy("");
                             }
                             Toast.makeText(this, ann.getTitle() + " has left the map group", Toast.LENGTH_SHORT).show();
-                            centerOnThisGuy = "";
-                            deviceSingleton.setCenterOnThisGuy("");
+//                            centerOnThisGuy = "";
+//                            deviceSingleton.setCenterOnThisGuy("");
 //                            markers.get(m).remove();
                             ann.remove();
                             markers.remove(m);
